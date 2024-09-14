@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Migracion-de-datos-1.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="FrontForms\" />
+    <Folder Include="Logic\Tools\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
+    <PackageReference Include="MvvmLightLibs" Version="5.4.1.1" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Migracion-de-datos-1.jpg" />
+  </ItemGroup>
+
+</Project>

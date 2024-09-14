@@ -1,0 +1,17 @@
+﻿<Window x:Name="window" x:Class="ToolMigration.HomeWin"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ToolMigration"
+        mc:Ignorable="d"
+        Title="HomeWin" Height="450" Width="800" AllowsTransparency="True">
+    <Window.Background>
+        <ImageBrush ImageSource="/Migracion-de-datos-1.jpg"/>
+    </Window.Background>
+    <Button Content="Iniciar" HorizontalAlignment="Center" Margin="0,305,0,0" VerticalAlignment="Top" Height="47" Width="134" SnapsToDevicePixels="True">
+        <Button.Effect>
+            <DropShadowEffect/>
+        </Button.Effect>
+    </Button>
+</Window>
