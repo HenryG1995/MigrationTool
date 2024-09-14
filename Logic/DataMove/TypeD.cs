@@ -86,11 +86,7 @@ namespace ToolMigration.Logic.DataMove
             new SqlDataType("JSON", "Representación de datos JSON (implícito, no hay un tipo nativo)", typeof(string))
         };
         }
-    }
-
-    class Program
-    {
-        static void Main()
+        public void carga()
         {
             SqlServerDataTypes sqlTypes = new SqlServerDataTypes();
 

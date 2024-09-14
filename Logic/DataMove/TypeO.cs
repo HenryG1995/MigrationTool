@@ -100,11 +100,8 @@ namespace ToolMigration.Logic.DataMove
             new OracleDataType("REF CURSOR", "Puntero a un cursor (usado en PL/SQL)", typeof(object))
         };
         }
-    }
-
-    public class Programsaw2qw
-    {
-        static void Main()
+   
+        public void cargadata()
         {
             OracleDataTypes oracleTypes = new OracleDataTypes();
 
