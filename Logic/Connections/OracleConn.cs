@@ -161,7 +161,20 @@ namespace ToolMigration.Logic.Connections
         public DataTable selCOlsSQL(string table_name)
         {
             DataTable dt = new DataTable();
-            var sql = "SELECT\r\ndistinct\r\n    DATA_TYPE,\r\n    CASE\r\n        WHEN DATA_TYPE IN ('decimal', 'numeric') THEN  CAST(NUMERIC_PRECISION AS VARCHAR) + ',' + CAST(NUMERIC_SCALE AS VARCHAR)\r\n        WHEN DATA_TYPE IN ('varchar', 'nvarchar', 'char', 'nchar') THEN  CAST(CHARACTER_MAXIMUM_LENGTH AS VARCHAR)\r\n        WHEN DATA_TYPE IN ('date','datetime', 'datetime2', 'smalldatetime') THEN  CAST(DATETIME_PRECISION AS VARCHAR)\r\n        WHEN DATA_TYPE IN ('int','tinyint', 'integer', 'double','float','money') THEN  CAST(NUMERIC_PRECISION AS VARCHAR)+ ',' + CAST(NUMERIC_SCALE AS VARCHAR)\r\n        WHEN DATA_TYPE IN ('bit','varbinary', 'boolean') THEN '1,0'\r\n        ELSE 'other'\r\n    END AS tipo\r\nFROM\r\n    INFORMATION_SCHEMA.COLUMNS where table_name ='" + table_name+"'";
+            var sql = "SELECT\r\nORDINAL_POSITION,column_name, DATA_TYPE,\r\n   " +
+                " CASE\r\n        WHEN DATA_TYPE IN ('decimal','float', 'numeric') THEN  CAST(NUMERIC_PRECISION AS VARCHAR) + ',' + CAST(NUMERIC_SCALE AS VARCHAR)\r\n      " +
+                "  WHEN DATA_TYPE IN ('varchar','sql_variant','text', 'nvarchar', 'char', 'nchar') THEN  CAST(CHARACTER_MAXIMUM_LENGTH AS VARCHAR)\r\n        " +
+                "WHEN DATA_TYPE IN ('date','time','datetime', 'datetime2', 'smalldatetime') THEN  CAST(DATETIME_PRECISION AS VARCHAR)\r\n        " +
+                "WHEN DATA_TYPE IN ('int','bigint','smallint','tinyint', 'integer', 'double','money') THEN  CAST(NUMERIC_PRECISION AS VARCHAR)+ ',' + CAST(NUMERIC_SCALE AS VARCHAR)\r\n       " +
+                " WHEN DATA_TYPE IN ('float') THEN  CAST(NUMERIC_PRECISION AS VARCHAR)+ ',' + CAST(NUMERIC_SCALE AS VARCHAR)\r\n       " +
+                " WHEN DATA_TYPE IN ('bit','varbinary', 'boolean') THEN '1,0'\r\n       " +
+                " ELSE 'other'\r\n   " +
+                " END AS longitud,\r\n    " +
+                "IS_NULLABLE,\r\n   " +
+                " COLUMN_DEFAULT\r\nFROM\r\n    " +
+                "INFORMATION_SCHEMA.COLUMNS " +
+                " where table_name ='" + table_name + "'";
+
             using (SqlConnection connection = new SqlConnection(connectionString: connSql))
             {
                 try

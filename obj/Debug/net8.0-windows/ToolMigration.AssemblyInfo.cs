@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ToolMigration")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d1b893d4598458a6e30abf96132778f5e77494b2")]
 [assembly: System.Reflection.AssemblyProductAttribute("ToolMigration")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ToolMigration")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

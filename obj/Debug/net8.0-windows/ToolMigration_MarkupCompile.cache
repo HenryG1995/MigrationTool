@@ -4,17 +4,17 @@
 winexe
 C#
 .cs
-C:\Users\Henry\source\repos\ToolMigration\obj\Debug\net8.0-windows\
+C:\Users\Henry\Desktop\PG\MigrationTool\obj\Debug\net8.0-windows\
 ToolMigration
 none
 false
 TRACE;DEBUG;NET;NET8_0;NETCOREAPP
-C:\Users\Henry\source\repos\ToolMigration\App.xaml
+C:\Users\Henry\Desktop\PG\MigrationTool\App.xaml
 3-1350812024
 
-14-1387206333
+15-1443069620
 2331735659826
 HomeWin.xaml;MainWindow.xaml;SeleccionTablas.xaml;
 
-True
+False
 
