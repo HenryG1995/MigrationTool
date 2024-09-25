@@ -1,0 +1,21 @@
+# Ignorar archivos temporales
+temp/
+*.tmp
+vs/
+# Ignorar archivos de configuración local
+config.local
+
+# Ignorar archivos compilados
+build/
+*.class
+
+# Ignorar archivos de caché
+cache/
+
+.vs/ProjectEvaluation/toolmigration.metadata.v9.bin
+.vs/ProjectEvaluation/toolmigration.projects.v9.bin
+.vs/ProjectEvaluation/toolmigration.strings.v9.bin
+.vs/ToolMigration/FileContentIndex/*.vsidx
+.vs/ToolMigration/v17/DocumentLayout.backup.json
+obj/Debug/net8.0-windows/ToolMigration_t0iyi2re_wpftmp.*
+.bin/*

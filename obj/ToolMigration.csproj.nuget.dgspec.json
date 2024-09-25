@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\henry\\OneDrive\\Documents\\Pg\\MigrationTool\\ToolMigration.csproj": {}
+    "C:\\Users\\henry\\Downloads\\Nueva carpeta\\MigrationTool\\ToolMigration.csproj": {}
   },
   "projects": {
-    "C:\\Users\\henry\\OneDrive\\Documents\\Pg\\MigrationTool\\ToolMigration.csproj": {
+    "C:\\Users\\henry\\Downloads\\Nueva carpeta\\MigrationTool\\ToolMigration.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\henry\\OneDrive\\Documents\\Pg\\MigrationTool\\ToolMigration.csproj",
+        "projectUniqueName": "C:\\Users\\henry\\Downloads\\Nueva carpeta\\MigrationTool\\ToolMigration.csproj",
         "projectName": "ToolMigration",
-        "projectPath": "C:\\Users\\henry\\OneDrive\\Documents\\Pg\\MigrationTool\\ToolMigration.csproj",
+        "projectPath": "C:\\Users\\henry\\Downloads\\Nueva carpeta\\MigrationTool\\ToolMigration.csproj",
         "packagesPath": "C:\\Users\\henry\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\henry\\OneDrive\\Documents\\Pg\\MigrationTool\\obj\\",
+        "outputPath": "C:\\Users\\henry\\Downloads\\Nueva carpeta\\MigrationTool\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

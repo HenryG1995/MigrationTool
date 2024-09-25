@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "U+h2OvLY7qk=",
+  "dgSpecHash": "Bsl/tjyE38Q=",
   "success": true,
-  "projectFilePath": "C:\\Users\\henry\\OneDrive\\Documents\\Pg\\MigrationTool\\ToolMigration.csproj",
+  "projectFilePath": "C:\\Users\\henry\\Downloads\\Nueva carpeta\\MigrationTool\\ToolMigration.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\henry\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\henry\\.nuget\\packages\\azure.identity\\1.11.3\\azure.identity.1.11.3.nupkg.sha512",
