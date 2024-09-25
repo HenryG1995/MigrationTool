@@ -16,7 +16,13 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using ToolMigration.Logic.Connections;
+using ToolMigration.Logic.DataModels;
 using ToolMigration.Logic.Transformation;
+
+using System;
+using System.Collections.Generic;
+using Binding = System.Windows.Data.Binding;
+
 
 namespace ToolMigration
 {
@@ -27,6 +33,7 @@ namespace ToolMigration
     {
 
         public List<ItemDataGrid> listaT;
+        public List<TablasDestino> ListTablas = new List<TablasDestino>();
 
         public class ItemDataGrid
         {
@@ -37,8 +44,33 @@ namespace ToolMigration
         public SeleccionTablas()
         {
             InitializeComponent();
+
+            dt_tabla_origen.AutoGenerateColumns = false;
+
+            // Agregar la columna NO (texto)
+            DataGridTextColumn noColumn = new DataGridTextColumn
+            {
+                Header = "NO",
+                Binding = new Binding("NO")
+            };
+            dt_tabla_origen.Columns.Add(noColumn);
+
+            DataGridCheckBoxColumn marcarColumn = new DataGridCheckBoxColumn
+            {
+                Header = "Marcar",
+                Binding = new Binding("MARCAR")
+            };
+            dt_tabla_origen.Columns.Add(marcarColumn);
+
+            DataGridTextColumn tableNameColumn = new DataGridTextColumn
+            {
+                Header = "Table Name",
+                Binding = new Binding("TABLE_NAME")
+            };
+            dt_tabla_origen.Columns.Add(tableNameColumn);
+
             LoadDataGridView();
-            tablas_destino();
+         //   tablas_destino();
             tablas_origen();
         }
 
@@ -62,15 +94,18 @@ namespace ToolMigration
         {
             // crear dt que permita la obtencion de datos en sql server.
 
-            DataTable tab_origen;
+            var tab_origen = new List<TablasOrigen>();
 
             MetaDataCore metaDataCore = new MetaDataCore();
 
             Conn conn = new Conn();
 
-            tab_origen = conn.selSQL(metaDataCore.all_tables_SQL());
+            tab_origen = conn.TabOrigen(metaDataCore.all_tables_SQL());
 
-            dt_tabla_origen.ItemsSource = tab_origen.DefaultView;
+           
+            // Asignar los datos al DataGridView
+            dt_tabla_origen.ItemsSource = tab_origen;
+
 
         }
 
@@ -78,24 +113,16 @@ namespace ToolMigration
         {
             // crear dt que permita la obtencion de datos en Oracle 19c.
 
-            DataTable tab_destino;
-
-            MetaDataCore metaDataCore = new MetaDataCore();
-
-            Conn conn = new Conn();
-
-            tab_destino = conn.selOra(metaDataCore.all_tables_Oracle());
-
-            dt_tabla_destino.ItemsSource = tab_destino.DefaultView;
+            dt_tabla_destino.ItemsSource = ListTablas;
 
         }
 
         private void Mover()
         {
+            CleanList();
 
+            AgregateDataList();
 
-
-            
         }
 
         
@@ -153,6 +180,41 @@ namespace ToolMigration
 
             // Agregar el DataGridView al formulario
 //            this.Controls.Add(dgv);
+        }
+
+        private void AgregateDataList()
+        {
+            //primero se lee la data que se migrara de una bd a otra 
+
+
+            foreach (var item in dt_tabla_origen.Items)
+            {
+                if (item is TablasOrigen tabs)
+                {
+                    if (tabs.MARCAR is true)
+                    {
+                        TablasDestino dest = new TablasDestino();
+
+                        dest.TABLE_NAME = tabs.TABLE_NAME;
+
+                        ListTablas.Add(dest);
+                    }
+                }
+
+            }
+
+        }
+
+        private void CleanList()
+
+        {
+           ListTablas.Clear();
+
+        }
+
+        private void CheckBox_Checked_1(object sender, RoutedEventArgs e)
+        {
+          
         }
     }
 }

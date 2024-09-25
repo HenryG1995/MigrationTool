@@ -2,12 +2,14 @@
 using Microsoft.Data.SqlClient;
 using Oracle.ManagedDataAccess.Client;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using ToolMigration.Logic.DataModels;
 
 
 namespace ToolMigration.Logic.Connections
@@ -68,6 +70,7 @@ namespace ToolMigration.Logic.Connections
             builder.InitialCatalog = database;
             builder.UserID = usuario;
             builder.Password = pass;
+            
 
             connSql = builder.ConnectionString;
 
@@ -99,6 +102,41 @@ namespace ToolMigration.Logic.Connections
             
         }
 
+        public List<TablasOrigen> TabOrigen(string sql)
+        {
+            var list = new List<TablasOrigen>();
+
+
+            using (SqlConnection connection = new SqlConnection(connSql))
+            {
+                // Crear un comando con la consulta
+                SqlCommand command = new SqlCommand(sql, connection);
+
+                // Abrir la conexión
+                connection.Open();
+
+                // Ejecutar el comando y obtener el SqlDataReader
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    // Leer cada fila del SqlDataReader
+                    while (reader.Read())
+                    {
+                        // Crear un objeto Person y agregarlo a la lista
+                        TablasOrigen tab = new TablasOrigen
+                        {
+                            NO = reader["NO"].ToString(),
+                            MARCAR = bool.Parse( reader["MARCAR"].ToString()),
+                            TABLE_NAME = reader["TABLE_NAME"].ToString()
+                        };
+
+                        list.Add(tab);
+                    }
+                }
+
+
+                return list;
+            }
+        }
 
         public DataTable selSQL(string sql)
         {

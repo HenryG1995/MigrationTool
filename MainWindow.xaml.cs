@@ -29,6 +29,28 @@ namespace ToolMigration
             InitializeComponent();
             btn_continuar.IsEnabled = false;
 
+            #region PRUEBAS
+
+            //SQL SERVER
+            txt_sql_user.Text = "sa";
+            txt_sql_catalogo.Text = "MP_CONFIG"; //USUARIO QUESE CONSULTARA
+            txt_sql_host.Text = "192.168.71.131";
+            txt_sql_Puerto.Text = "1433";
+            txt_sql_password.Password = "Andromeda12";
+            txt_sql_server_name.Text = "WIN-1CP22PH03L6";
+
+            //ORACLE
+
+            txt_oracle_sid.Text = "ORCL";
+            txt_oracle_user.Text = "MP_CONFIG"; // basede datos destino
+            txt_Oracle_Password.Password = "Andromeda12";
+            txt_Oracle_host.Text = "192.168.71.131";
+            txt_Oracle_Puerto.Text = "1521";
+
+
+            #endregion
+
+
         }
 
         private void btn_test_Click(object sender, RoutedEventArgs e)
@@ -36,7 +58,8 @@ namespace ToolMigration
 
             MessageBox.Show("Inicia el test", "Confirmación", MessageBoxButton.OK, MessageBoxImage.Information);
 
-
+            var prueba = false;
+            var cont = 0;
             if (1>0)
             {
                 var con = new ToolMigration.Logic.Connections.Conn();
@@ -55,11 +78,33 @@ namespace ToolMigration
                 txt_sql_server_name.IsEnabled = false;
                 btn_continuar.IsEnabled = true;
                 btn_test.IsEnabled = false;
-                con.Oratest(txt_oracle_user.Text, txt_Oracle_Password.Password, txt_Oracle_host.Text, txt_Oracle_Puerto.Text, txt_oracle_sid.Text);
-                con.SqlTest(txt_sql_user.Text,txt_sql_password.Password,txt_sql_host.Text, txt_sql_Puerto.Text, txt_sql_catalogo.Text);
-               // con.SqlTest(txt_sql_catalogo.Text, txt_sql_server_name.Text);    
-                MessageBox.Show("Test correcto ", "Confirmación", MessageBoxButton.OK, MessageBoxImage.Information);
-                btn_continuar.IsEnabled= true;
+                prueba = con.Oratest(txt_oracle_user.Text, txt_Oracle_Password.Password, txt_Oracle_host.Text, txt_Oracle_Puerto.Text, txt_oracle_sid.Text);
+                if (prueba == true) { prueba = false;  cont = 1; }
+                prueba = con.SqlTest(txt_sql_user.Text,txt_sql_password.Password,txt_sql_host.Text, txt_sql_Puerto.Text, txt_sql_catalogo.Text);
+                if (prueba == true) { prueba = false; cont = 2; }
+                if (cont == 2)
+                {
+                    MessageBox.Show("Test correcto ", "Confirmación", MessageBoxButton.OK, MessageBoxImage.Information);
+                    btn_continuar.IsEnabled = true;
+                }else
+                {
+
+                    MessageBox.Show("Test incorrecto ", "Confirmación", MessageBoxButton.OK, MessageBoxImage.Error);
+                    txt_Oracle_host.IsEnabled = true;
+                    txt_Oracle_Password.IsEnabled = true;
+                    txt_Oracle_Puerto.IsEnabled = true;
+                    txt_oracle_sid.IsEnabled = true;
+                    txt_oracle_user.IsEnabled = true;
+                    //parametros sql
+                    txt_sql_catalogo.IsEnabled = true;
+                    txt_sql_Puerto.IsEnabled = true;
+                    txt_sql_host.IsEnabled = true;
+                    txt_sql_password.IsEnabled = true;
+                    txt_sql_user.IsEnabled = true;
+                    txt_sql_server_name.IsEnabled = true;
+
+                }
+                // con.SqlTest(txt_sql_catalogo.Text, txt_sql_server_name.Text);    
                 btn_test.IsEnabled= false;
             }
             else

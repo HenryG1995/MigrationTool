@@ -12,7 +12,7 @@
                 <Grid Background="#FFE5E5E5">
                     <Grid/>
                     <Label Content="Origen ( SQL Server )" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="123"/>
-                    <CheckBox Content="Marcar Todos" HorizontalAlignment="Left" Margin="330,73,0,0" VerticalAlignment="Top"/>
+                    <CheckBox Content="Marcar Todos" HorizontalAlignment="Left" Margin="330,73,0,0" VerticalAlignment="Top" Checked="CheckBox_Checked_1"/>
                     <CheckBox Content="Seleccionar Individual" HorizontalAlignment="Center" Margin="0,93,0,0" VerticalAlignment="Top"/>
                     <Label Content="Destino ( Oracle 19c )" HorizontalAlignment="Left" Margin="547,10,0,0" VerticalAlignment="Top" Width="123"/>
                     <Button Content="&lt;-------" HorizontalAlignment="Left" Margin="330,252,0,0" VerticalAlignment="Top" Width="85"/>
@@ -22,9 +22,9 @@
                     <CheckBox Content="aceptar" HorizontalAlignment="Left" Margin="343,190,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.202,0.57"/>
                     <DataGrid x:Name="dt_tabla_origen" d:ItemsSource="{Binding OrigenItems}" AutoGenerateColumns="False" Margin="5,41,551,10">
                         <DataGrid.Columns>
-                            <DataGridTextColumn HeaderStringFormat="Numero de columna" Header="#" SortDirection="Descending"/>
-                            <DataGridCheckBoxColumn Header="Marcar"/>
-                            <DataGridTextColumn Header="Nombre Tabla                        "/>
+                            <DataGridTextColumn Header="NO" Binding="{Binding NO}" />
+                            <DataGridCheckBoxColumn Header="Marcar" Binding="{Binding MARCAR}" />
+                            <DataGridTextColumn Header="Table Name" Binding="{Binding TABLE_NAME}" />
                         </DataGrid.Columns>
                     </DataGrid>
                     <DataGrid x:Name="dt_tabla_destino" d:ItemsSource="{Binding DestinoItems}" Margin="527,41,10,10" AutoGenerateColumns="False">

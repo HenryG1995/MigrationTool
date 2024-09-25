@@ -9,12 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Migracion-de-datos-1.jpg" />
+    <Compile Remove="FrontForms\**" />
+    <EmbeddedResource Remove="FrontForms\**" />
+    <None Remove="FrontForms\**" />
+    <Page Remove="FrontForms\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="FrontForms\" />
-    <Folder Include="Logic\Tools\" />
+    <None Remove="Migracion-de-datos-1.jpg" />
   </ItemGroup>
 
   <ItemGroup>

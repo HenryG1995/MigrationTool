@@ -5,8 +5,6 @@ VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ToolMigration", "ToolMigration.csproj", "{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Testing", "..\Testing\Testing.csproj", "{5A5C2BAB-E26C-4DA5-9381-349BA2528A14}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,10 +15,6 @@ Global
 		{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5A5C2BAB-E26C-4DA5-9381-349BA2528A14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5A5C2BAB-E26C-4DA5-9381-349BA2528A14}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5A5C2BAB-E26C-4DA5-9381-349BA2528A14}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5A5C2BAB-E26C-4DA5-9381-349BA2528A14}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
