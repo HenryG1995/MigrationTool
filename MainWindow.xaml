@@ -18,9 +18,9 @@
             <Rectangle HorizontalAlignment="Left" Height="234" Margin="344,0,0,0" Stroke="Black" VerticalAlignment="Top" Width="309"/>
 
 
-            <TextBox x:Name="txt_sql_user" HorizontalAlignment="Left" Margin="62,52,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="217" TextChanged="txt_sql_user_TextChanged"/>
-            <PasswordBox x:Name="txt_sql_password" HorizontalAlignment="Left" Margin="62,76,0,0" VerticalAlignment="Top" Width="217"/>
-            <TextBox x:Name="txt_sql_catalogo" HorizontalAlignment="Left" Margin="62,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" Width="217" TextChanged="txt_sql_catalogo_TextChanged"/>
+            <TextBox x:Name="txt_sql_user" HorizontalAlignment="Left" Margin="64,79,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="217" TextChanged="txt_sql_user_TextChanged"/>
+            <PasswordBox x:Name="txt_sql_password" HorizontalAlignment="Left" Margin="64,103,0,0" VerticalAlignment="Top" Width="217"/>
+            <TextBox x:Name="txt_sql_catalogo" HorizontalAlignment="Left" Margin="64,0,0,0" TextWrapping="Wrap" VerticalAlignment="Center" Width="217" TextChanged="txt_sql_catalogo_TextChanged"/>
             <Button x:Name="btn_test" Content="Test Conexion" HorizontalAlignment="Left" Margin="221,284,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.803,-0.059" Width="100" Click="btn_test_Click"/>
             <Button x:Name="btn_continuar" Content="Continuar" HorizontalAlignment="Left" Margin="344,284,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.803,-0.059" Width="100" Click="btn_continuar_Click"/>
             <Label Content="SQL Server" HorizontalAlignment="Left" Margin="110,4,0,0" VerticalAlignment="Top" Width="120"/>
@@ -28,22 +28,20 @@
             <TextBox x:Name="txt_oracle_user" HorizontalAlignment="Left" Margin="426,64,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="217"/>
             <PasswordBox x:Name="txt_Oracle_Password" HorizontalAlignment="Left" Margin="426,88,0,0" VerticalAlignment="Top" Width="217"/>
             <TextBox x:Name="txt_Oracle_host" HorizontalAlignment="Left" Margin="426,120,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="217"/>
-            <TextBox x:Name="txt_sql_Puerto" HorizontalAlignment="Left" Margin="62,183,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="217" TextChanged="txt_sql_Puerto_TextChanged"/>
+            <TextBox x:Name="txt_sql_Puerto" HorizontalAlignment="Left" Margin="64,183,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="217" TextChanged="txt_sql_Puerto_TextChanged"/>
             <TextBox x:Name="txt_Oracle_Puerto" HorizontalAlignment="Left" Margin="426,147,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="217"/>
             <TextBox x:Name="txt_oracle_sid" HorizontalAlignment="Left" Margin="426,178,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="217"/>
-            <Label Content="Usuario" HorizontalAlignment="Left" Margin="0,46,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.502,0.307"/>
-            <Label Content="Password" HorizontalAlignment="Left" Margin="0,72,0,0" VerticalAlignment="Top"/>
-            <Label Content="HostIP" HorizontalAlignment="Left" Margin="0,98,0,0" VerticalAlignment="Top"/>
+            <Label Content="Usuario" HorizontalAlignment="Left" Margin="2,73,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.502,0.307"/>
+            <Label Content="Password" HorizontalAlignment="Left" Margin="2,99,0,0" VerticalAlignment="Top"/>
+            <Label Content="HostIP" HorizontalAlignment="Left" Margin="2,125,0,0" VerticalAlignment="Top"/>
             <Label Content="Database" HorizontalAlignment="Left" Margin="0,153,0,0" VerticalAlignment="Top"/>
-            <Label Content="Server" HorizontalAlignment="Left" Margin="0,127,0,0" VerticalAlignment="Top"/>
             <Label Content="Puerto" HorizontalAlignment="Left" Margin="2,179,0,0" VerticalAlignment="Top"/>
             <Label Content="Usuario" HorizontalAlignment="Left" Margin="357,60,0,0" VerticalAlignment="Top"/>
             <Label Content="Password" HorizontalAlignment="Left" Margin="357,86,0,0" VerticalAlignment="Top"/>
             <Label Content="HostIP" HorizontalAlignment="Left" Margin="357,116,0,0" VerticalAlignment="Top"/>
             <Label Content="Puerto" HorizontalAlignment="Left" Margin="357,143,0,0" VerticalAlignment="Top"/>
             <Label Content="SID" HorizontalAlignment="Left" Margin="357,172,0,0" VerticalAlignment="Top"/>
-            <TextBox x:Name="txt_sql_host" HorizontalAlignment="Left" Margin="62,104,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="217" TextChanged="txt_sql_host_TextChanged"/>
-            <TextBox x:Name="txt_sql_server_name" HorizontalAlignment="Left" Margin="62,131,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="217" TextChanged="txt_sql_server_name_TextChanged"/>
+            <TextBox x:Name="txt_sql_host" HorizontalAlignment="Left" Margin="64,131,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="217" TextChanged="txt_sql_host_TextChanged"/>
 
 
         </Grid>

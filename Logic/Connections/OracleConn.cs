@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -17,9 +18,11 @@ namespace ToolMigration.Logic.Connections
  
    public class Conn
     {
-        public string connOra {  get; set; }
-        public string connSql { get; set; }
+       
+        ConnString conections = new ConnString();
 
+        public string SqlConection { get; set; }
+        public string OraConection { get; set; }
 
         public bool Oratest(string UserID = "db_tienda",
                         string Pass = "Andromeda12/",
@@ -33,8 +36,14 @@ namespace ToolMigration.Logic.Connections
 
             // connectionString = string.Format("USER ID={0};PASSWORD={1};DATA SOURCE= (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = {2})(PORT = {3}))(CONNECT_DATA = (SERVICE_NAME ={4}))) ;", UserID, Pass, Host, Port, ServiceName);
             connectionString = string.Format("USER ID={0};PASSWORD={1};DATA SOURCE= (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = {2})(PORT = {3}))(CONNECT_DATA = (SID = {4}))) ;", UserID, Pass, Host, Port, SID);
+
             // connectionString = "Data Source=tu_servidor:1521/tu_sid;User Id=tu_usuario;Password=tu_contrasena;";
-            connOra = connectionString;
+          
+
+            conections.ORAString = connectionString;
+
+            OraConection = connectionString;
+
             using (OracleConnection connection = new OracleConnection(connectionString))
             {
                 try
@@ -64,26 +73,31 @@ namespace ToolMigration.Logic.Connections
         }
         public bool SqlTest(string usuario,string pass, string host,string port, string database)
         {
-     
+
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
             builder.DataSource = host + "," + port;
             builder.InitialCatalog = database;
             builder.UserID = usuario;
             builder.Password = pass;
-            
+            builder.TrustServerCertificate = true;
 
-            connSql = builder.ConnectionString;
+            string connectionString = builder.ConnectionString;
 
+            conections.ORAString = connectionString;
 
-            using (SqlConnection connection = new SqlConnection(connectionString: connSql))
+            SqlConection = connectionString;
+
+            using (SqlConnection connection = new SqlConnection(connectionString: connectionString))
+
             {
                 try
                 {
-                    connection.Open();
+                    connection.Open(); // Open the connection before executing commands
                     Console.WriteLine("Conexion SQL establecida correctamente");
-                    SqlCommand command = new SqlCommand("SELECT NEWID() AS UUID");
+
+                    SqlCommand command = new SqlCommand("SELECT NEWID() AS UUID", connection); // Specify the connection explicitly
                     SqlDataReader reader = command.ExecuteReader();
-                    
+
                     while (reader.Read())
                     {
                         Console.WriteLine(reader["UUID"].ToString());
@@ -91,58 +105,69 @@ namespace ToolMigration.Logic.Connections
 
                     reader.Close();
                     return true;
-
-                } catch (Exception ex)
+                }
+                catch (Exception ex)
                 {
-
+                    Console.WriteLine("Error: " + ex.Message);
                     return false;
                 }
-
             }
-            
+
         }
 
-        public List<TablasOrigen> TabOrigen(string sql)
+        public List<TablasOrigen> TabOrigen(string sql, string str)
         {
-            var list = new List<TablasOrigen>();
+            List<TablasOrigen> list = new List<TablasOrigen>();
 
+          
 
-            using (SqlConnection connection = new SqlConnection(connSql))
+            using (SqlConnection connection = new SqlConnection(str))
             {
-                // Crear un comando con la consulta
-                SqlCommand command = new SqlCommand(sql, connection);
-
-                // Abrir la conexión
-                connection.Open();
-
-                // Ejecutar el comando y obtener el SqlDataReader
-                using (SqlDataReader reader = command.ExecuteReader())
+                try
                 {
-                    // Leer cada fila del SqlDataReader
-                    while (reader.Read())
-                    {
-                        // Crear un objeto Person y agregarlo a la lista
-                        TablasOrigen tab = new TablasOrigen
-                        {
-                            NO = reader["NO"].ToString(),
-                            MARCAR = bool.Parse( reader["MARCAR"].ToString()),
-                            TABLE_NAME = reader["TABLE_NAME"].ToString()
-                        };
+                    connection.Open(); // Open the connection before executing commands
 
-                        list.Add(tab);
+                    SqlCommand command = new SqlCommand(sql, connection); // Specify the connection explicitly
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            try // Handle potential data conversion errors within the loop
+                            {
+                                TablasOrigen tab = new TablasOrigen
+                                {
+                                    NO = reader.GetInt64(reader.GetOrdinal("NO")), // Use GetOrdinal for safer column access
+                                    MARCAR = reader.GetBoolean(reader.GetOrdinal("MARCAR")),
+                                    TABLE_NAME = reader.GetString(reader.GetOrdinal("TABLE_NAME"))
+                                };
+                                list.Add(tab);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Error parsing data in row: {ex.Message}");
+                                // Consider logging the error or taking appropriate action
+                            }
+                        }
                     }
                 }
-
-
-                return list;
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error opening connection or executing command: {ex.Message}");
+                    // Consider logging the error or throwing a more specific exception
+                }
             }
+
+            return list;
         }
 
         public DataTable selSQL(string sql)
         {
             DataTable dt = new DataTable();
 
-            using (SqlConnection connection = new SqlConnection(connectionString: connSql))
+            var str = conections.SQLString;
+
+            using (SqlConnection connection = new SqlConnection(connectionString: str))
             {
                 try
                 {
@@ -170,7 +195,9 @@ namespace ToolMigration.Logic.Connections
         {
             DataTable dt = new DataTable();
 
-            using (OracleConnection connection = new OracleConnection(connOra))
+            var str = conections.SQLString;
+
+            using (OracleConnection connection = new OracleConnection(str))
             {
                 try
                 {
@@ -213,7 +240,9 @@ namespace ToolMigration.Logic.Connections
                 "INFORMATION_SCHEMA.COLUMNS " +
                 " where table_name ='" + table_name + "'";
 
-            using (SqlConnection connection = new SqlConnection(connectionString: connSql))
+            var str = conections.SQLString;
+
+            using (SqlConnection connection = new SqlConnection(connectionString: str))
             {
                 try
                 {

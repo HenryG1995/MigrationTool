@@ -22,6 +22,7 @@ using ToolMigration.Logic.Transformation;
 using System;
 using System.Collections.Generic;
 using Binding = System.Windows.Data.Binding;
+using static ToolMigration.Logic.DataMove.Equivalency;
 
 
 namespace ToolMigration
@@ -32,6 +33,7 @@ namespace ToolMigration
     public partial class SeleccionTablas : Window
     {
 
+
         public List<ItemDataGrid> listaT;
         public List<TablasDestino> ListTablas = new List<TablasDestino>();
 
@@ -41,37 +43,28 @@ namespace ToolMigration
             public bool Marcar { get; set; }
             public string NombreTabla { get; set; }
         }
-        public SeleccionTablas()
+        public SeleccionTablas(string oracon, string sqlcon)
         {
             InitializeComponent();
 
             dt_tabla_origen.AutoGenerateColumns = false;
 
             // Agregar la columna NO (texto)
-            DataGridTextColumn noColumn = new DataGridTextColumn
-            {
-                Header = "NO",
-                Binding = new Binding("NO")
-            };
-            dt_tabla_origen.Columns.Add(noColumn);
+            DataConvertPerso dataConvertPerso = new DataConvertPerso();
 
-            DataGridCheckBoxColumn marcarColumn = new DataGridCheckBoxColumn
-            {
-                Header = "Marcar",
-                Binding = new Binding("MARCAR")
-            };
-            dt_tabla_origen.Columns.Add(marcarColumn);
+            List<DataTypeConvert> datatypes = new List<DataTypeConvert>();
 
-            DataGridTextColumn tableNameColumn = new DataGridTextColumn
-            {
-                Header = "Table Name",
-                Binding = new Binding("TABLE_NAME")
-            };
-            dt_tabla_origen.Columns.Add(tableNameColumn);
+            dataConvertPerso.llenalista(datatypes);
+
+            dt_tabla_conversiones.ItemsSource = datatypes.ToList();
+
+            dt_tabla_conversiones.IsEnabled= false;
+
+            dt_tabla_conversiones.Items.Refresh();
 
             LoadDataGridView();
-         //   tablas_destino();
-            tablas_origen();
+            //   tablas_destino();
+            tablas_origen(sqlcon);
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -86,11 +79,11 @@ namespace ToolMigration
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
-  
+
         }
 
 
-        private void tablas_origen()
+        private void tablas_origen(string sqlcon)
         {
             // crear dt que permita la obtencion de datos en sql server.
 
@@ -100,9 +93,9 @@ namespace ToolMigration
 
             Conn conn = new Conn();
 
-            tab_origen = conn.TabOrigen(metaDataCore.all_tables_SQL());
+            tab_origen = conn.TabOrigen(metaDataCore.all_tables_SQL(), sqlcon);
 
-           
+
             // Asignar los datos al DataGridView
             dt_tabla_origen.ItemsSource = tab_origen;
 
@@ -125,7 +118,7 @@ namespace ToolMigration
 
         }
 
-        
+
         private void LoadDataGridView()
         {
             // Crear una tabla para almacenar los datos
@@ -179,7 +172,7 @@ namespace ToolMigration
             this.DataContext = dgv;
 
             // Agregar el DataGridView al formulario
-//            this.Controls.Add(dgv);
+            //            this.Controls.Add(dgv);
         }
 
         private void AgregateDataList()
@@ -208,13 +201,376 @@ namespace ToolMigration
         private void CleanList()
 
         {
-           ListTablas.Clear();
+            ListTablas.Clear();
 
         }
 
-        private void CheckBox_Checked_1(object sender, RoutedEventArgs e)
+      
+
+        private void Button_Click(object sender, RoutedEventArgs e)
         {
-          
+            int numeroDeElementos = dt_tabla_origen.Items.Count;
+
+            if (numeroDeElementos > 0)
+            {
+
+                List<TablaDestinoDT> list = new List<TablaDestinoDT>();
+                List<TablasOrigen> listOrigen = new List<TablasOrigen>();
+
+                foreach (var item in dt_tabla_origen.Items)
+                {
+                    if (item is TablasOrigen tabs)
+                    {
+                        if (tabs.MARCAR is true)
+                        {
+                            TablaDestinoDT dto = new TablaDestinoDT();
+
+                            dto.TABLE_NAME = tabs.TABLE_NAME;
+                            dto.MARCAR = tabs.MARCAR;
+                            dto.NO = tabs.NO;
+                            list.Add(dto);
+                        }
+                        if (tabs.MARCAR is true)
+                        {
+                            TablasOrigen dto2 = new TablasOrigen();
+                            dto2.TABLE_NAME = tabs.TABLE_NAME;
+                            dto2.MARCAR = true;
+                            dto2.NO = tabs.NO;
+                            listOrigen.Add(dto2);
+
+                        }else
+                        {
+                            TablasOrigen dto2 = new TablasOrigen();
+                            dto2.TABLE_NAME = tabs.TABLE_NAME;
+                            dto2.MARCAR = false;
+                            dto2.NO = tabs.NO;
+                            listOrigen.Add(dto2);
+                        }
+                       
+
+
+                    }
+
+                }
+
+                dt_tabla_destino.ItemsSource = list;
+
+                dt_tabla_destino.Items.Refresh();
+
+                dt_tabla_origen.ItemsSource = listOrigen;
+
+                dt_tabla_origen.Items.Refresh();
+
+
+                //chk_marca_todo_origen.IsEnabled = true;
+                //chk_marca_todos_destino.IsEnabled = true;
+                //chk_sel_individual_origen.IsEnabled = true;
+                //chk_sel_individual_destino.IsEnabled = true;
+                //dt_tabla_origen.IsEnabled = true;
+
+               
+               
+
+
+            }
+            
+
+
+
+
+        }
+
+     
+
+        private void chk_marca_todo_origen_Checked(object sender, RoutedEventArgs e)
+        {
+
+            if (chk_marca_todo_origen.IsChecked == true)
+            {
+                chk_marca_todos_destino.IsEnabled = false;
+                chk_sel_individual_origen.IsEnabled = false;
+                chk_sel_individual_destino.IsEnabled = false;
+                
+                List<TablasOrigen> list = new List<TablasOrigen>();
+
+
+
+                foreach (var item in dt_tabla_origen.Items)
+                {
+                    if (item is TablasOrigen tabs)
+                    {
+                        TablasOrigen dto = new TablasOrigen();
+
+                        dto.TABLE_NAME = tabs.TABLE_NAME;
+                        dto.MARCAR = true;
+                        dto.NO = tabs.NO;
+                        list.Add(dto);
+
+                    }
+
+                }
+
+               
+
+                dt_tabla_origen.ItemsSource = list;
+
+                dt_tabla_origen.Items.Refresh();
+
+             
+
+            }
+            else
+            {
+                List<TablasOrigen> list = new List<TablasOrigen>();
+
+
+
+                foreach (var item in dt_tabla_origen.Items)
+                {
+                    if (item is TablasOrigen tabs)
+                    {
+                        TablasOrigen dto = new TablasOrigen();
+
+                        dto.TABLE_NAME = tabs.TABLE_NAME;
+                        dto.MARCAR = false;
+                        dto.NO = tabs.NO;
+                        list.Add(dto);
+
+                    }
+
+                }
+
+
+                chk_marca_todos_destino.IsEnabled = true;
+                chk_sel_individual_origen.IsEnabled = true;
+                chk_sel_individual_destino.IsEnabled = true;
+                
+
+                dt_tabla_origen.ItemsSource = list;
+
+                dt_tabla_origen.Items.Refresh();
+            }
+
+
+        }
+
+        private void chk_marca_todos_destino_Checked(object sender, RoutedEventArgs e)
+        {
+            if (chk_marca_todos_destino.IsChecked == true) 
+            {
+                List<TablaDestinoDT> list = new List<TablaDestinoDT>();
+
+
+
+                foreach (var item in dt_tabla_destino.Items)
+                {
+                    if (item is TablaDestinoDT tabs)
+                    {
+                        TablaDestinoDT dto = new TablaDestinoDT();
+
+                        dto.TABLE_NAME = tabs.TABLE_NAME;
+                        dto.MARCAR = true;
+                        dto.NO = tabs.NO;
+                        list.Add(dto);
+
+                    }
+
+                }
+
+                dt_tabla_destino.ItemsSource = list;
+
+                dt_tabla_destino.Items.Refresh();
+
+                chk_marca_todo_origen.IsEnabled = false;
+                chk_sel_individual_origen.IsEnabled = false;
+                chk_sel_individual_destino.IsEnabled = false;
+
+            }
+            else
+            {
+                List<TablaDestinoDT> list = new List<TablaDestinoDT>();
+
+
+
+                foreach (var item in dt_tabla_destino.Items)
+                {
+                    if (item is TablaDestinoDT tabs)
+                    {
+                        TablaDestinoDT dto = new TablaDestinoDT();
+
+                        dto.TABLE_NAME = tabs.TABLE_NAME;
+                        dto.MARCAR = false;
+                        dto.NO = tabs.NO;
+                        list.Add(dto);
+
+                    }
+
+                }
+                chk_marca_todo_origen.IsEnabled = true;
+                chk_sel_individual_origen.IsEnabled = true;
+                chk_sel_individual_destino.IsEnabled = true;
+
+                dt_tabla_destino.ItemsSource = list;
+
+                dt_tabla_destino.Items.Refresh();
+            }
+
+           
+
+
+        }
+
+        private void btn_quitar_destino_Click(object sender, RoutedEventArgs e)
+        {
+
+
+            List<TablaDestinoDT> list = new List<TablaDestinoDT>();
+            List<TablasOrigen> listori = new List<TablasOrigen>();
+            List<TablaDestinoDT>  lista = new List<TablaDestinoDT>();
+
+
+            foreach (var item in dt_tabla_destino.Items)
+            {
+                if (item is TablaDestinoDT tabs)
+                {
+                    TablaDestinoDT dto = new TablaDestinoDT();
+
+                    if (tabs.MARCAR == false)
+                    {
+                        dto.TABLE_NAME = tabs.TABLE_NAME;
+                        dto.MARCAR = tabs.MARCAR;
+                        dto.NO = tabs.NO;
+                        list.Add(dto);
+                    }
+
+                   
+
+                }
+
+            }
+
+            foreach(var item in dt_tabla_origen.Items)
+            {
+                
+
+                if (item is TablasOrigen tabs)
+                {
+                    TablasOrigen dto = new TablasOrigen();
+
+                    dto.MARCAR = false;
+
+                    foreach (var l in list)
+                    {
+                        if (tabs.TABLE_NAME == l.TABLE_NAME && tabs.NO == l.NO)
+                        {
+                            dto.MARCAR = true;
+
+                        }
+                    }
+
+                   dto.TABLE_NAME = tabs.TABLE_NAME;
+                   dto.NO = tabs.NO;
+                   listori.Add(dto);
+
+                }
+
+
+            }
+
+
+
+            dt_tabla_destino.ItemsSource = list;
+
+            dt_tabla_destino.Items.Refresh();
+
+            dt_tabla_origen.ItemsSource = listori;
+
+            dt_tabla_origen.Items.Refresh();
+
+            dt_tabla_origen.IsEnabled = true;
+
+
+            //chk_marca_todo_origen.IsEnabled = false;
+            //chk_sel_individual_origen.IsEnabled = false;
+            //chk_sel_individual_destino.IsEnabled = false;
+
+
+
+        }
+
+        private void chk_sel_individual_origen_Checked(object sender, RoutedEventArgs e)
+        {
+
+            if (chk_sel_individual_origen.IsChecked == true)
+            {
+
+                chk_marca_todos_destino.IsEnabled = false;
+        
+           
+                chk_marca_todo_origen.IsEnabled = false;
+
+                dt_tabla_origen.IsEnabled = true;
+
+                //List<TablaDestinoDT> list = new List<TablaDestinoDT>();
+
+                //dt_tabla_destino.ItemsSource= list;
+
+            }
+            else
+            {
+
+                chk_marca_todos_destino.IsEnabled = true;
+            
+         
+                chk_marca_todo_origen.IsEnabled = true;
+
+                dt_tabla_origen.IsEnabled = true;
+
+
+            }
+
+
+        }
+
+        private void chk_sel_individual_destino_Checked(object sender, RoutedEventArgs e)
+        {
+
+            if (chk_sel_individual_destino.IsChecked == true)
+            {
+                chk_marca_todos_destino.IsEnabled = false;
+
+
+                chk_marca_todo_origen.IsEnabled = false;
+
+                dt_tabla_destino.IsEnabled= true;
+
+            }else
+            {
+                chk_marca_todos_destino.IsEnabled = true;
+
+                chk_marca_todo_origen.IsEnabled = true;
+
+                dt_tabla_destino.IsEnabled = true;
+
+            }
+
+        }
+
+   
+
+        private void chk_Convert_Manual_chked(object sender, RoutedEventArgs e)
+        {
+            if(chk_Convert_Manual.IsChecked == true)
+            {
+                dt_tabla_conversiones.IsEnabled = true;
+            }
+            else
+            {
+                dt_tabla_conversiones.IsEnabled = false;
+            }
+
+            
+
         }
     }
 }

@@ -5,48 +5,85 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ToolMigration"
         mc:Ignorable="d"
-        Title="MigrationTool" Height="450" Width="800">
-    <Grid>
-        <TabControl>
+        Title="MigrationTool" Height="545" Width="1341">
+    <Grid Margin="0,0,0,43">
+        <Grid.ColumnDefinitions>
+
+        </Grid.ColumnDefinitions>
+        <TabControl Margin="20,10,157,-10">
             <TabItem Header="Selector de tablas">
-                <Grid Background="#FFE5E5E5">
-                    <Grid/>
-                    <Label Content="Origen ( SQL Server )" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="123"/>
-                    <CheckBox Content="Marcar Todos" HorizontalAlignment="Left" Margin="330,73,0,0" VerticalAlignment="Top" Checked="CheckBox_Checked_1"/>
-                    <CheckBox Content="Seleccionar Individual" HorizontalAlignment="Center" Margin="0,93,0,0" VerticalAlignment="Top"/>
-                    <Label Content="Destino ( Oracle 19c )" HorizontalAlignment="Left" Margin="547,10,0,0" VerticalAlignment="Top" Width="123"/>
-                    <Button Content="&lt;-------" HorizontalAlignment="Left" Margin="330,252,0,0" VerticalAlignment="Top" Width="85"/>
-                    <Button Content="---------&gt;" HorizontalAlignment="Left" Margin="330,113,0,0" VerticalAlignment="Top" Width="85"/>
-                    <CheckBox Content="Marcar Todos" HorizontalAlignment="Left" Margin="330,285,0,0" VerticalAlignment="Top"/>
-                    <CheckBox Content="Seleccionar Individual" HorizontalAlignment="Center" Margin="0,305,0,0" VerticalAlignment="Top"/>
-                    <CheckBox Content="aceptar" HorizontalAlignment="Left" Margin="343,190,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.202,0.57"/>
-                    <DataGrid x:Name="dt_tabla_origen" d:ItemsSource="{Binding OrigenItems}" AutoGenerateColumns="False" Margin="5,41,551,10">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="NO" Binding="{Binding NO}" />
-                            <DataGridCheckBoxColumn Header="Marcar" Binding="{Binding MARCAR}" />
-                            <DataGridTextColumn Header="Table Name" Binding="{Binding TABLE_NAME}" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                    <DataGrid x:Name="dt_tabla_destino" d:ItemsSource="{Binding DestinoItems}" Margin="527,41,10,10" AutoGenerateColumns="False">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="#"/>
-                            <DataGridCheckBoxColumn Header="Marcar"/>
-                            <DataGridTextColumn Header="Nombre Tabla               "/>
-                        </DataGrid.Columns>
-                    </DataGrid>
+                <Grid Background="#FFE5E5E5" Height="429" HorizontalAlignment="Left" Width="1133" Margin="10,0,0,0">
+                    <Grid Margin="0,-21,0,0"/>
+                    <Label Content="Origen ( SQL Server )" HorizontalAlignment="Left" Margin="194,5,0,0" VerticalAlignment="Top" Width="123"/>
+                    <Label Content="Destino ( Oracle 19c )" HorizontalAlignment="Left" Margin="597,10,0,0" VerticalAlignment="Top" Width="123"/>
+                    <CheckBox x:Name="chk_marca_todo_origen" Content="Marcar Todos" HorizontalAlignment="Left" VerticalAlignment="Bottom" Checked="chk_marca_todo_origen_Checked" Unchecked="chk_marca_todo_origen_Checked" Margin="477,0,0,303" />
+                    <CheckBox x:Name="chk_sel_individual_origen" Content="Seleccionar Individual" HorizontalAlignment="Left" Checked="chk_sel_individual_origen_Checked" Unchecked="chk_sel_individual_origen_Checked" IsChecked="False" Margin="477,90,0,323"/>
+                    <Button x:Name="btn_quitar_destino" Content="&lt;-------" HorizontalAlignment="Right" VerticalAlignment="Top" Width="126" RenderTransformOrigin="0.374,0.686" Click="btn_quitar_destino_Click" Margin="0,289,533,0"/>
+                    <Button x:Name="btn_mov_a_destino" Content="---------&gt;" HorizontalAlignment="Left" VerticalAlignment="Top" Width="126" Click="Button_Click" Margin="477,132,0,0"/>
+                    <CheckBox x:Name="chk_marca_todos_destino" Content="Marcar Todos" HorizontalAlignment="Left" VerticalAlignment="Top" Checked="chk_marca_todos_destino_Checked" Unchecked="chk_marca_todos_destino_Checked" Margin="477,242,0,0" />
+                    <CheckBox x:Name="chk_sel_individual_destino" Content="Seleccionar Individual" HorizontalAlignment="Left" Margin="477,262,0,0" VerticalAlignment="Top" Height="22" Checked="chk_sel_individual_destino_Checked" Unchecked="chk_sel_individual_destino_Checked" IsChecked="False"/>
+                    <Grid HorizontalAlignment="Right" Margin="0,36,99,15" Width="1024">
+
+                        <DataGrid x:Name="dt_tabla_origen"  AutoGenerateColumns="False" HorizontalAlignment="Left" Width="425" Margin="10,3,0,-3">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="NO" Binding="{Binding NO}" />
+                                <DataGridCheckBoxColumn Header="Marcar" Binding="{Binding MARCAR}" />
+                                <DataGridTextColumn Header="Table Name           " Binding="{Binding TABLE_NAME}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <DataGrid x:Name="dt_tabla_destino" Margin="607,0,10,0" AutoGenerateColumns="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="NO" Binding="{Binding NO}" />
+                                <DataGridCheckBoxColumn Header="Marcar" Binding="{Binding MARCAR}" />
+                                <DataGridTextColumn Header="Table Name           " Binding="{Binding TABLE_NAME}" />
+
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <CheckBox x:Name="chk_acepta_destino" Content="Aceptar" HorizontalAlignment="Left" Margin="466,147,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.631,0.663"/>
+                    </Grid>
+                    <Label Content="Origen" HorizontalAlignment="Left" Margin="467,46,0,0" VerticalAlignment="Top"/>
                 </Grid>
             </TabItem>
             <TabItem
         Header="Conversiones">
                 <Grid Background="#FFE5E5E5">
-                    <CheckBox Content="Conversion Manual" HorizontalAlignment="Left" Margin="10,33,0,0" VerticalAlignment="Top"/>
+                    <CheckBox x:Name="chk_Convert_Manual" Content="Conversion Manual" HorizontalAlignment="Left" Margin="10,33,0,0" VerticalAlignment="Top" Checked="chk_Convert_Manual_chked" Unchecked="chk_Convert_Manual_chked"/>
                     <GroupBox Header="SQL &lt;----&gt; ORACLE" Margin="0,67,0,0">
-                        <DataGrid d:ItemsSource="{d:SampleData ItemCount=5}" SelectionChanged="DataGrid_SelectionChanged" AutoGenerateColumns="False">
+                        <DataGrid x:Name="dt_tabla_conversiones"  SelectionChanged="DataGrid_SelectionChanged" AutoGenerateColumns="False">
                             <DataGrid.Columns>
-                                <DataGridCheckBoxColumn Header="Modificar"/>
-                                <DataGridTemplateColumn Header="Tipo de dato Origen"/>
-                                <DataGridTemplateColumn Header="Tipo de dato Destino"/>
+                                <DataGridTextColumn Header="NO"  IsReadOnly="True" Binding="{Binding NO}"/>
+                                <DataGridTextColumn Header="Tipo de dato Origen" IsReadOnly="True" Binding="{Binding Tipo}"/>
+                                <DataGridTextColumn Header="Propiedad" IsReadOnly="True" Binding="{Binding Propiedad}"/>
+                                <DataGridTextColumn Header="Equivalencia" IsReadOnly="True" Binding="{Binding Equivalencia}"/>
+                                <DataGridTextColumn Header="Propiedad Equivalente" IsReadOnly="True" Binding="{Binding EqPropiedad}"/>
+                                <DataGridTemplateColumn Header="Tipo Personalizado">
+                                    <DataGridTemplateColumn.CellTemplate >
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding PersoType}"  />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate>
+                                            <TextBox Text="{Binding PersoType, UpdateSourceTrigger=PropertyChanged}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn Header="Propiedad de Tipo Personalizado" >
+                                    <DataGridTemplateColumn.CellTemplate >
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding PropPersoType}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate>
+                                            <TextBox Text="{Binding PropPersoType, UpdateSourceTrigger=PropertyChanged}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Header="Observacion" IsReadOnly="True" Binding="{Binding Observacion}"/>
                             </DataGrid.Columns>
+
                         </DataGrid>
                     </GroupBox>
                 </Grid>
@@ -54,11 +91,14 @@
             <TabItem Header="Scripts">
                 <Grid Background="#FFE5E5E5">
                     <Button Content="Generar Script" HorizontalAlignment="Left" Margin="47,255,0,0" VerticalAlignment="Top" Width="157" Height="38"/>
-                    <ComboBox HorizontalAlignment="Left" Margin="47,69,0,0" VerticalAlignment="Top" Width="157"/>
+                    <ComboBox HorizontalAlignment="Left" Margin="47,69,0,0" VerticalAlignment="Top" Width="157">
+                        <TabItem Header="TXT"/>
+                        <TabItem Header="SQL"/>
+                    </ComboBox>
                     <Label Content="Seleccionar Tipo Extencion" HorizontalAlignment="Left" Margin="47,43,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.271,0.437" Width="157"/>
                     <Label Content="Donde Guardar el archivo" HorizontalAlignment="Left" Margin="47,172,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.271,0.437" Width="157"/>
                     <TextBox HorizontalAlignment="Left" Margin="47,203,0,0" TextWrapping="Wrap" Text="c://nueva carpeta/script.txt" VerticalAlignment="Top" Width="157"/>
-                    <StatusBar Margin="47,356,37,25">
+                    <StatusBar Margin="47,410,37,25">
                         <StatusBar.Effect>
                             <DropShadowEffect/>
                         </StatusBar.Effect>
@@ -87,6 +127,7 @@
             </TabItem>
 
         </TabControl>
+        <Grid HorizontalAlignment="Left" Height="15" VerticalAlignment="Bottom" Width="59" Margin="505,0,0,86"/>
 
     </Grid>
 </Window>

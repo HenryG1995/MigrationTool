@@ -8875,23 +8875,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\henry\\.nuget\\packages\\": {},
+    "C:\\Users\\Henry\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\henry\\Downloads\\Nueva carpeta\\MigrationTool\\ToolMigration.csproj",
+      "projectUniqueName": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\ToolMigration.csproj",
       "projectName": "ToolMigration",
-      "projectPath": "C:\\Users\\henry\\Downloads\\Nueva carpeta\\MigrationTool\\ToolMigration.csproj",
-      "packagesPath": "C:\\Users\\henry\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\henry\\Downloads\\Nueva carpeta\\MigrationTool\\obj\\",
+      "projectPath": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\ToolMigration.csproj",
+      "packagesPath": "C:\\Users\\Henry\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\henry\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Henry\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -8956,7 +8956,7 @@
             "privateAssets": "none"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.400/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.204/PortableRuntimeIdentifierGraph.json"
       }
     }
   },

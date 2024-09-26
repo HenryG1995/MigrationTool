@@ -13,7 +13,7 @@ namespace ToolMigration.Logic.Transformation
             string query ="";
 
 
-            query = "select ROW_NUMBER() OVER (ORDER BY table_name) NO ,0 as MARCAR, TABLE_NAME from INFORMATION_SCHEMA.TABLES where table_type =  'BASE TABLE'";
+            query = "select ROW_NUMBER() OVER (ORDER BY table_name) NO ,cast(0 as bit) as MARCAR, TABLE_NAME from INFORMATION_SCHEMA.TABLES where table_type =  'BASE TABLE'";
 
 
             return query;

@@ -23,6 +23,8 @@ namespace ToolMigration
 
     public partial class MainWindow : Window
     {
+        public string oracon;
+        public string sqlcon;
       
         public MainWindow()
         {
@@ -34,17 +36,19 @@ namespace ToolMigration
             //SQL SERVER
             txt_sql_user.Text = "sa";
             txt_sql_catalogo.Text = "MP_CONFIG"; //USUARIO QUESE CONSULTARA
-            txt_sql_host.Text = "192.168.71.131";
+          //  txt_sql_host.Text = "192.168.71.131";
+            txt_sql_host.Text = "192.168.0.18";
             txt_sql_Puerto.Text = "1433";
             txt_sql_password.Password = "Andromeda12";
-            txt_sql_server_name.Text = "WIN-1CP22PH03L6";
+    
 
             //ORACLE
 
             txt_oracle_sid.Text = "ORCL";
             txt_oracle_user.Text = "MP_CONFIG"; // basede datos destino
             txt_Oracle_Password.Password = "Andromeda12";
-            txt_Oracle_host.Text = "192.168.71.131";
+         // txt_Oracle_host.Text = "192.168.71.131";
+            txt_Oracle_host.Text = "192.168.0.18";
             txt_Oracle_Puerto.Text = "1521";
 
 
@@ -60,8 +64,7 @@ namespace ToolMigration
 
             var prueba = false;
             var cont = 0;
-            if (1>0)
-            {
+            
                 var con = new ToolMigration.Logic.Connections.Conn();
                 //parametros oracle
                 txt_Oracle_host.IsEnabled = false;
@@ -75,8 +78,8 @@ namespace ToolMigration
                 txt_sql_host.IsEnabled = false;
                 txt_sql_password.IsEnabled = false;
                 txt_sql_user.IsEnabled = false;
-                txt_sql_server_name.IsEnabled = false;
-                btn_continuar.IsEnabled = true;
+            
+                btn_continuar.IsEnabled = false;
                 btn_test.IsEnabled = false;
                 prueba = con.Oratest(txt_oracle_user.Text, txt_Oracle_Password.Password, txt_Oracle_host.Text, txt_Oracle_Puerto.Text, txt_oracle_sid.Text);
                 if (prueba == true) { prueba = false;  cont = 1; }
@@ -86,7 +89,11 @@ namespace ToolMigration
                 {
                     MessageBox.Show("Test correcto ", "Confirmación", MessageBoxButton.OK, MessageBoxImage.Information);
                     btn_continuar.IsEnabled = true;
-                }else
+                    sqlcon = con.SqlConection;
+                    oracon = con.OraConection;
+                    btn_test.IsEnabled = false;
+            }
+                else
                 {
 
                     MessageBox.Show("Test incorrecto ", "Confirmación", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -101,20 +108,12 @@ namespace ToolMigration
                     txt_sql_host.IsEnabled = true;
                     txt_sql_password.IsEnabled = true;
                     txt_sql_user.IsEnabled = true;
-                    txt_sql_server_name.IsEnabled = true;
+                    btn_test.IsEnabled = true;
 
-                }
-                // con.SqlTest(txt_sql_catalogo.Text, txt_sql_server_name.Text);    
-                btn_test.IsEnabled= false;
             }
-            else
-            {
-
-                MessageBox.Show("test incorrecto verifique sus parametros de conexion", "Confirmación", MessageBoxButton.OK, MessageBoxImage.Information);
-                btn_continuar.IsEnabled = false;
-            };
+                // con.SqlTest(txt_sql_catalogo.Text, txt_sql_server_name.Text);    
                
-
+           
             return;
         }
 
@@ -145,11 +144,11 @@ namespace ToolMigration
 
         private void btn_continuar_Click(object sender, RoutedEventArgs e)
         {
-            SeleccionTablas seleccionTablas = new SeleccionTablas();
+            SeleccionTablas seleccionTablas = new SeleccionTablas(oracon,sqlcon);
             seleccionTablas.Show();
 
-            MainWindow mainWindow = new MainWindow();
-            mainWindow.Hide();
+         
+            this.Close();
         }
     }
 }
