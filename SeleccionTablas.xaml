@@ -92,8 +92,11 @@
                 <Grid Background="#FFE5E5E5">
                     <Button Content="Generar Script" HorizontalAlignment="Left" Margin="47,255,0,0" VerticalAlignment="Top" Width="157" Height="38"/>
                     <ComboBox HorizontalAlignment="Left" Margin="47,69,0,0" VerticalAlignment="Top" Width="157">
-                        <TabItem Header="TXT"/>
-                        <TabItem Header="SQL"/>
+                        
+                        <AccessText Text="TXT"></AccessText>
+                        <AccessText Text="Sql"></AccessText>
+                        
+                        
                     </ComboBox>
                     <Label Content="Seleccionar Tipo Extencion" HorizontalAlignment="Left" Margin="47,43,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.271,0.437" Width="157"/>
                     <Label Content="Donde Guardar el archivo" HorizontalAlignment="Left" Margin="47,172,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.271,0.437" Width="157"/>

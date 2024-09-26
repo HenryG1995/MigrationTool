@@ -1,9 +1,12 @@
-﻿using System;
+﻿using Microsoft.Data.SqlClient;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Documents;
+using ToolMigration.Logic.DataModels;
 
 namespace ToolMigration.Logic.Transformation
 {
@@ -19,7 +22,43 @@ namespace ToolMigration.Logic.Transformation
 
         }
 
+        public List<string> scriptListRead(string sqlcon,string script) 
+        { 
+        var scriptList = new List<string>();
 
+            using (SqlConnection connection = new SqlConnection(sqlcon))
+            {
+                try
+                {
+                    connection.Open(); 
+
+                    SqlCommand command = new SqlCommand(sqlcon, connection);
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            try 
+                            {
+                                scriptList.Add(reader.GetString(0));
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Error parseando  data en la fila: {ex.Message}");
+                               
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"error al abrir comando y conexion : {ex.Message}");
+              
+                }
+            }
+
+            return scriptList;
+        }
 
     }
 }

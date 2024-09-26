@@ -18,11 +18,12 @@ using System.Windows.Shapes;
 using ToolMigration.Logic.Connections;
 using ToolMigration.Logic.DataModels;
 using ToolMigration.Logic.Transformation;
-
-using System;
+using System.IO;
 using System.Collections.Generic;
 using Binding = System.Windows.Data.Binding;
 using static ToolMigration.Logic.DataMove.Equivalency;
+using System.Security.Cryptography.X509Certificates;
+using static System.Net.Mime.MediaTypeNames;
 
 
 namespace ToolMigration
@@ -33,7 +34,8 @@ namespace ToolMigration
     public partial class SeleccionTablas : Window
     {
 
-
+        public string sqlcon_data { get; set; }
+        public string oracon_data { get; set; }
         public List<ItemDataGrid> listaT;
         public List<TablasDestino> ListTablas = new List<TablasDestino>();
 
@@ -58,13 +60,15 @@ namespace ToolMigration
 
             dt_tabla_conversiones.ItemsSource = datatypes.ToList();
 
-            dt_tabla_conversiones.IsEnabled= false;
+            dt_tabla_conversiones.IsEnabled = false;
 
             dt_tabla_conversiones.Items.Refresh();
 
             LoadDataGridView();
             //   tablas_destino();
             tablas_origen(sqlcon);
+            sqlcon_data = sqlcon;
+            oracon_data = oracon;
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -205,7 +209,7 @@ namespace ToolMigration
 
         }
 
-      
+
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -238,7 +242,8 @@ namespace ToolMigration
                             dto2.NO = tabs.NO;
                             listOrigen.Add(dto2);
 
-                        }else
+                        }
+                        else
                         {
                             TablasOrigen dto2 = new TablasOrigen();
                             dto2.TABLE_NAME = tabs.TABLE_NAME;
@@ -246,7 +251,7 @@ namespace ToolMigration
                             dto2.NO = tabs.NO;
                             listOrigen.Add(dto2);
                         }
-                       
+
 
 
                     }
@@ -268,19 +273,19 @@ namespace ToolMigration
                 //chk_sel_individual_destino.IsEnabled = true;
                 //dt_tabla_origen.IsEnabled = true;
 
-               
-               
+
+
 
 
             }
-            
+
 
 
 
 
         }
 
-     
+
 
         private void chk_marca_todo_origen_Checked(object sender, RoutedEventArgs e)
         {
@@ -290,7 +295,7 @@ namespace ToolMigration
                 chk_marca_todos_destino.IsEnabled = false;
                 chk_sel_individual_origen.IsEnabled = false;
                 chk_sel_individual_destino.IsEnabled = false;
-                
+
                 List<TablasOrigen> list = new List<TablasOrigen>();
 
 
@@ -310,13 +315,13 @@ namespace ToolMigration
 
                 }
 
-               
+
 
                 dt_tabla_origen.ItemsSource = list;
 
                 dt_tabla_origen.Items.Refresh();
 
-             
+
 
             }
             else
@@ -344,7 +349,7 @@ namespace ToolMigration
                 chk_marca_todos_destino.IsEnabled = true;
                 chk_sel_individual_origen.IsEnabled = true;
                 chk_sel_individual_destino.IsEnabled = true;
-                
+
 
                 dt_tabla_origen.ItemsSource = list;
 
@@ -356,7 +361,7 @@ namespace ToolMigration
 
         private void chk_marca_todos_destino_Checked(object sender, RoutedEventArgs e)
         {
-            if (chk_marca_todos_destino.IsChecked == true) 
+            if (chk_marca_todos_destino.IsChecked == true)
             {
                 List<TablaDestinoDT> list = new List<TablaDestinoDT>();
 
@@ -415,7 +420,7 @@ namespace ToolMigration
                 dt_tabla_destino.Items.Refresh();
             }
 
-           
+
 
 
         }
@@ -426,7 +431,7 @@ namespace ToolMigration
 
             List<TablaDestinoDT> list = new List<TablaDestinoDT>();
             List<TablasOrigen> listori = new List<TablasOrigen>();
-            List<TablaDestinoDT>  lista = new List<TablaDestinoDT>();
+            List<TablaDestinoDT> lista = new List<TablaDestinoDT>();
 
 
             foreach (var item in dt_tabla_destino.Items)
@@ -443,15 +448,15 @@ namespace ToolMigration
                         list.Add(dto);
                     }
 
-                   
+
 
                 }
 
             }
 
-            foreach(var item in dt_tabla_origen.Items)
+            foreach (var item in dt_tabla_origen.Items)
             {
-                
+
 
                 if (item is TablasOrigen tabs)
                 {
@@ -468,9 +473,9 @@ namespace ToolMigration
                         }
                     }
 
-                   dto.TABLE_NAME = tabs.TABLE_NAME;
-                   dto.NO = tabs.NO;
-                   listori.Add(dto);
+                    dto.TABLE_NAME = tabs.TABLE_NAME;
+                    dto.NO = tabs.NO;
+                    listori.Add(dto);
 
                 }
 
@@ -505,8 +510,8 @@ namespace ToolMigration
             {
 
                 chk_marca_todos_destino.IsEnabled = false;
-        
-           
+
+
                 chk_marca_todo_origen.IsEnabled = false;
 
                 dt_tabla_origen.IsEnabled = true;
@@ -520,8 +525,8 @@ namespace ToolMigration
             {
 
                 chk_marca_todos_destino.IsEnabled = true;
-            
-         
+
+
                 chk_marca_todo_origen.IsEnabled = true;
 
                 dt_tabla_origen.IsEnabled = true;
@@ -542,9 +547,10 @@ namespace ToolMigration
 
                 chk_marca_todo_origen.IsEnabled = false;
 
-                dt_tabla_destino.IsEnabled= true;
+                dt_tabla_destino.IsEnabled = true;
 
-            }else
+            }
+            else
             {
                 chk_marca_todos_destino.IsEnabled = true;
 
@@ -556,11 +562,11 @@ namespace ToolMigration
 
         }
 
-   
+
 
         private void chk_Convert_Manual_chked(object sender, RoutedEventArgs e)
         {
-            if(chk_Convert_Manual.IsChecked == true)
+            if (chk_Convert_Manual.IsChecked == true)
             {
                 dt_tabla_conversiones.IsEnabled = true;
             }
@@ -569,8 +575,96 @@ namespace ToolMigration
                 dt_tabla_conversiones.IsEnabled = false;
             }
 
-            
+
 
         }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+
+            string txt = (cmb_tipo_extencion.SelectedItem.ToString().Length <= 0) ? "sql" : cmb_tipo_extencion.SelectedItem.ToString();
+
+            string ruta = (txt_ruta_archivo.Text.Length <= 0) ? "C://script" : txt_ruta_archivo.Text;
+
+            ruta = ruta.Trim()+"."+ txt;
+
+
+
+            proceso_crea_scripts(sqlcon_data, ListTablas.ToList(), ruta);
+
+
+
+
+
+
+        }
+
+        public void proceso_crea_scripts(string sql, List<TablasDestino> tablasDestinoList, string ruta)
+        {
+
+            try
+            {
+
+                try
+                {
+                    using (StreamWriter sw = new StreamWriter(ruta))
+                    {
+                        sw.WriteLine("+=======+INICIA la creacion de scripts para insercion de datos+=======+");
+
+                        foreach (var item in tablasDestinoList)
+                        {
+                            var script_txt = "";
+
+                            sw.WriteLine("Inicia tabla :" + item.TABLE_NAME);
+
+                            GenScriptDestino genScriptDestino = new GenScriptDestino();
+
+                            script_txt = genScriptDestino.GENSCRIPT(item.TABLE_NAME);
+
+                            List<string> lista_scripts = new List<string>();
+
+                            Scripting scripting = new Scripting();
+
+                            lista_scripts = scripting.scriptListRead(sql, script_txt);
+
+                            foreach (string script in lista_scripts)
+                            {
+
+                                sw.WriteLine(script.ToString());
+                            }
+
+                            sw.WriteLine("Finaliza tabla :" + item.TABLE_NAME);
+
+
+                        }
+
+
+                    }
+                    Console.WriteLine("Archivo creado exitosamente.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error al crear el archivo: " + ex.Message);
+
+                }
+
+
+
+
+
+
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+
+        }
+
+
+
+
+
     }
 }
