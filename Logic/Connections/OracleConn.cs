@@ -10,7 +10,9 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using ToolMigration.Logic.DataModels;
+using ToolMigration.Logic.Transformation;
 
 
 namespace ToolMigration.Logic.Connections
@@ -71,7 +73,7 @@ namespace ToolMigration.Logic.Connections
                 }
             };
         }
-        public bool SqlTest(string usuario,string pass, string host,string port, string database)
+        public bool SqlTest(string usuario, string pass, string host, string port, string database)
         {
 
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
@@ -115,11 +117,115 @@ namespace ToolMigration.Logic.Connections
 
         }
 
+        public List<DataTypeOrigenXTable> ListaColumnas(string connectionString,string table_name)
+        {
+            List<DataTypeOrigenXTable> lista = new List<DataTypeOrigenXTable>();
+            
+            MetaDataCore metaDataCore = new MetaDataCore();
+
+            var sql_command = metaDataCore.ALL_TYPE_COLUMNS_SQLMODEL_X_TABLE(table_name);
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open(); // Open the connection before executing commands
+
+                    SqlCommand command = new SqlCommand(sql_command, connection); // Specify the connection explicitly
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            try // Handle potential data conversion errors within the loop
+                            {
+                                DataTypeOrigenXTable tab = new DataTypeOrigenXTable
+                                {
+                                    TABLE_NAME = reader.GetString(reader.GetOrdinal("TABLE_NAME")),
+                                    COLUMN_NAME = reader.GetString(reader.GetOrdinal("COLUMN_NAME")),
+                                    ORDINAL_POSITION = reader.GetInt32(reader.GetOrdinal("ORDINAL_POSITION")),
+                                    COLUMN_DEFAULT = reader.GetString(reader.GetOrdinal("COLUMN_DEFAULT")),
+                                    IS_NULLABLE = reader.GetBoolean(reader.GetOrdinal("IS_NULLABLE")),
+                                    DATA_TYPE = reader.GetString(reader.GetOrdinal("DATA_TYPE")),
+                                    DATA_TYPE_DETAIL = reader.GetString(reader.GetOrdinal("DATA_TYPE_DETAIL")),
+                                    DATA_LENGHT = reader.GetString(reader.GetOrdinal("DATA_LENGHT"))
+                                    
+                                    //NO = reader.GetInt64(reader.GetOrdinal("NO")), // Use GetOrdinal for safer column access
+                                    //MARCAR = reader.GetBoolean(reader.GetOrdinal("MARCAR")),
+                                    //TABLE_NAME = reader.GetString(reader.GetOrdinal("TABLE_NAME"))
+                                };
+                                lista.Add(tab);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Error parsing data in row: {ex.Message}");
+                                // Consider logging the error or taking appropriate action
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error opening connection or executing command: {ex.Message}");
+                    // Consider logging the error or throwing a more specific exception
+                }
+            }
+
+
+
+            return lista;
+        }
+
+        public List<Dictionary<string, object>> ExecuteQuery(string query,string connectionString)
+        {
+            var result = new List<Dictionary<string, object>>();
+
+            try
+            {
+                // Crear la conexión a la base de datos
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    // Abrir la conexión
+                    connection.Open();
+
+                    // Crear el comando SQL
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        // Ejecutar el comando y obtener el lector de datos
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            // Leer cada fila del resultado
+                            while (reader.Read())
+                            {
+                                // Crear un diccionario para almacenar los datos de la fila
+                                var row = new Dictionary<string, object>();
+
+                                // Recorrer cada columna de la fila
+                                for (int i = 0; i < reader.FieldCount; i++)
+                                {
+                                    // Agregar al diccionario el nombre de la columna y su valor
+                                    row[reader.GetName(i)] = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                                }
+
+                                // Agregar la fila al resultado
+                                result.Add(row);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error al ejecutar la consulta: " + ex.Message);
+            }
+
+            return result.ToList();
+        }
+
+
         public List<TablasOrigen> TabOrigen(string sql, string str)
         {
             List<TablasOrigen> list = new List<TablasOrigen>();
-
-          
 
             using (SqlConnection connection = new SqlConnection(str))
             {

@@ -24,6 +24,7 @@ using Binding = System.Windows.Data.Binding;
 using static ToolMigration.Logic.DataMove.Equivalency;
 using System.Security.Cryptography.X509Certificates;
 using static System.Net.Mime.MediaTypeNames;
+using ToolMigration.Logic.Tools;
 
 
 namespace ToolMigration
@@ -590,16 +591,16 @@ namespace ToolMigration
 
 
 
-            proceso_crea_scripts(sqlcon_data, ListTablas.ToList(), ruta);
+            proceso_crea_scripts(sqlcon_data, ListTablas.ToList(), ruta, chk_GenScript_tables.IsChecked.Value,chk_Convert_Manual.IsChecked.Value );
 
-
+            
 
 
 
 
         }
 
-        public void proceso_crea_scripts(string sql, List<TablasDestino> tablasDestinoList, string ruta)
+        public void proceso_crea_scripts(string sql, List<TablasDestino> tablasDestinoList, string ruta,bool CreaTablas = false,bool perso = false)
         {
 
             try
@@ -609,6 +610,52 @@ namespace ToolMigration
                 {
                     using (StreamWriter sw = new StreamWriter(ruta))
                     {
+                        List<DataTypeConvert> dataTypeConverts = new List<DataTypeConvert>();
+
+                        foreach(var item in  dt_tabla_conversiones.Items )
+                        {
+                            if (item is DataTypeConvert tabs)
+                            {
+                                DataTypeConvert dto = new DataTypeConvert();
+
+                                dto.NO = tabs.NO;
+                                dto.Tipo = tabs.Tipo;
+                                dto.Propiedad = tabs.Propiedad;
+                                dto.Equivalencia = tabs.Equivalencia;
+                                dto.EqPropiedad = tabs.EqPropiedad;
+                                dto.PersoType = tabs.PersoType;
+                                dto.PropPersoType = tabs.PropPersoType;
+                                dto.Observacion = tabs.Observacion;
+                                dataTypeConverts.Add(dto);
+
+                            }
+
+                        }
+
+
+                        sw.WriteLine("+=======+INICIA la creacion de scripts para creacion de tablas +=======+");
+                        foreach (var item in tablasDestinoList)
+                        {
+                            var script_txt = string.Empty;
+
+                            GenScriptDestino genScriptDestino = new GenScriptDestino();
+                            sw.WriteLine("Inicia tabla :" + item.TABLE_NAME);
+
+                            if ( perso == true)
+                            {
+                                Tools tools = new Tools();
+
+                               
+                                script_txt = genScriptDestino.GenScriptTablesPerso(item.TABLE_NAME, dataTypeConverts);
+                            }
+                            else
+                            {
+                                script_txt = genScriptDestino.GenScriptTablesDefault(item.TABLE_NAME, dataTypeConverts);
+                            }
+                            
+                        }
+                        
+                        
                         sw.WriteLine("+=======+INICIA la creacion de scripts para insercion de datos+=======+");
 
                         foreach (var item in tablasDestinoList)

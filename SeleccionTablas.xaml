@@ -90,8 +90,8 @@
             </TabItem>
             <TabItem Header="Scripts">
                 <Grid Background="#FFE5E5E5">
-                    <Button Content="Generar Script" HorizontalAlignment="Left" Margin="47,255,0,0" VerticalAlignment="Top" Width="157" Height="38"/>
-                    <ComboBox HorizontalAlignment="Left" Margin="47,69,0,0" VerticalAlignment="Top" Width="157">
+                    <Button Content="Generar Script" HorizontalAlignment="Left" Margin="47,255,0,0" VerticalAlignment="Top" Width="157" Height="38" Click="Button_Click_1"/>
+                    <ComboBox x:Name="cmb_tipo_extencion" HorizontalAlignment="Left" Margin="47,69,0,0" VerticalAlignment="Top" Width="157">
                         
                         <AccessText Text="TXT"></AccessText>
                         <AccessText Text="Sql"></AccessText>
@@ -100,13 +100,13 @@
                     </ComboBox>
                     <Label Content="Seleccionar Tipo Extencion" HorizontalAlignment="Left" Margin="47,43,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.271,0.437" Width="157"/>
                     <Label Content="Donde Guardar el archivo" HorizontalAlignment="Left" Margin="47,172,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.271,0.437" Width="157"/>
-                    <TextBox HorizontalAlignment="Left" Margin="47,203,0,0" TextWrapping="Wrap" Text="c://nueva carpeta/script.txt" VerticalAlignment="Top" Width="157"/>
+                    <TextBox x:Name="txt_ruta_archivo" HorizontalAlignment="Left" Margin="47,203,0,0" TextWrapping="Wrap" Text="c://nueva carpeta/script.txt" VerticalAlignment="Top" Width="157"/>
                     <StatusBar Margin="47,410,37,25">
                         <StatusBar.Effect>
                             <DropShadowEffect/>
                         </StatusBar.Effect>
                     </StatusBar>
-                    <CheckBox HorizontalAlignment="Left" Margin="47,113,0,0" VerticalAlignment="Top" Width="157" Content="Generar Tablas" Checked="CheckBox_Checked"/>
+                    <CheckBox x:Name="chk_GenScript_tables" HorizontalAlignment="Left" Margin="47,113,0,0" VerticalAlignment="Top" Width="157" Content="Generar Tablas" Checked="CheckBox_Checked"/>
                     <CheckBox Content="Generar Insert " HorizontalAlignment="Left" VerticalAlignment="Top" Width="157" Margin="47,138,0,0"/>
                     <ListBox d:ItemsSource="{d:SampleData ItemCount=5}" Margin="343,69,37,64"/>
                 </Grid>

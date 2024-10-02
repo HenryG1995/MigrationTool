@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -58,27 +59,9 @@ namespace ToolMigration.Logic.DataMove
             return true;
         }
 
-        public DataTable llenaTiposOracle(List tipos)
-        { 
-            DataTable dt = new DataTable();
+       
 
-            dt.Columns.Add("Modificar");
-            dt.Columns.Add("Tipo de dato");
-            dt.Columns.Add("Observacion");
-
-            if (tipos != null)
-            {
-
-            }
-
-            
-            return data; }
-        public DataTable llenaTiposSQL() 
-        { 
-            
-            
-            
-            return data; }
+     
 
     }
 }
