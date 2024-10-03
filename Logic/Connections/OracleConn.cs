@@ -2,8 +2,10 @@
 using Microsoft.Data.SqlClient;
 using Oracle.ManagedDataAccess.Client;
 using System;
+using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Data.SqlTypes;
 using System.Linq;
@@ -135,6 +137,13 @@ namespace ToolMigration.Logic.Connections
 
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
+
+                        DataTable dt = new DataTable();
+
+                        //dt.Load(reader);
+
+                        //lista = ConvertDataTableToList(dt);
+
                         while (reader.Read())
                         {
                             try // Handle potential data conversion errors within the loop
@@ -148,11 +157,8 @@ namespace ToolMigration.Logic.Connections
                                     IS_NULLABLE = reader.GetBoolean(reader.GetOrdinal("IS_NULLABLE")),
                                     DATA_TYPE = reader.GetString(reader.GetOrdinal("DATA_TYPE")),
                                     DATA_TYPE_DETAIL = reader.GetString(reader.GetOrdinal("DATA_TYPE_DETAIL")),
-                                    DATA_LENGHT = reader.GetString(reader.GetOrdinal("DATA_LENGHT"))
-                                    
-                                    //NO = reader.GetInt64(reader.GetOrdinal("NO")), // Use GetOrdinal for safer column access
-                                    //MARCAR = reader.GetBoolean(reader.GetOrdinal("MARCAR")),
-                                    //TABLE_NAME = reader.GetString(reader.GetOrdinal("TABLE_NAME"))
+                                    DATA_LENGTH = reader.GetString(reader.GetOrdinal("DATA_LENGTH"))
+
                                 };
                                 lista.Add(tab);
                             }
@@ -174,6 +180,30 @@ namespace ToolMigration.Logic.Connections
 
 
             return lista;
+        }
+
+        public List<DataTypeOrigenXTable> ConvertDataTableToList(DataTable dt)
+        {
+            var list = new List<DataTypeOrigenXTable>();
+
+            foreach (DataRow row in dt.Rows)
+            {
+                var columnInfo = new DataTypeOrigenXTable
+                {
+                    TABLE_NAME = row["TABLE_NAME"] != DBNull.Value ? row["TABLE_NAME"].ToString() : null,
+                    COLUMN_NAME = row["COLUMN_NAME"] != DBNull.Value ? row["COLUMN_NAME"].ToString() : null,
+                    ORDINAL_POSITION = row["ORDINAL_POSITION"] != DBNull.Value ? Convert.ToInt32(row["ORDINAL_POSITION"]) : 0,
+                    COLUMN_DEFAULT = row["COLUMN_DEFAULT"] != DBNull.Value ? row["COLUMN_DEFAULT"].ToString() : null,
+                    IS_NULLABLE = row["IS_NULLABLE"] != DBNull.Value ? Convert.ToBoolean(row["IS_NULLABLE"]) : false,
+                    DATA_TYPE = row["DATA_TYPE"] != DBNull.Value ? row["DATA_TYPE"].ToString() : null,
+                    DATA_TYPE_DETAIL = row["DATA_TYPE_DETAIL"] != DBNull.Value ? row["DATA_TYPE_DETAIL"].ToString() : null,
+                    DATA_LENGTH = row["DATA_LENGTH"] != DBNull.Value ? row["DATA_LENGTH"].ToString() : null
+                };
+
+                list.Add(columnInfo);
+            }
+
+            return list;
         }
 
         public List<Dictionary<string, object>> ExecuteQuery(string query,string connectionString)

@@ -8,6 +8,10 @@ using System.IO;
 using System.Data;
 using ToolMigration.Logic.DataModels;
 using ToolMigration.Logic.Connections;
+using System.DirectoryServices.ActiveDirectory;
+using System.Windows.Controls;
+using System.Windows.Media.Media3D;
+using Microsoft.Data.SqlClient;
 namespace ToolMigration.Logic.Transformation
 {
     public class GenScriptDestino
@@ -50,7 +54,31 @@ namespace ToolMigration.Logic.Transformation
 
         public string GENSCRIPT(string tabla)
         {
-            var script_insert = "SELECT 'SELECT '''+\r\n(select 'INSERT INTO \"'+  T.TABLE_NAME + '\" ('+ STRING_AGG( '\"'+T.column_name+'\"',',') +') VALUES (''+'  from INFORMATION_SCHEMA.columns T where T.table_name = '" + tabla + "' GROUP BY T.TABLE_NAME) +''''+\r\n(\r\nSELECT\r\nSTRING_AGG(\r\n(        CASE\r\n            WHEN DATA_TYPE IN ('varchar', 'nvarchar', 'char', 'nchar', 'text', 'ntext', 'date', 'datetime', 'datetime2',\r\n                               'smalldatetime', 'time', 'timestamp') THEN CONCAT('''''''+[', COLUMN_NAME, ']+''''''')\r\n            WHEN DATA_TYPE IN ('int', 'bit', 'bigint', 'smallint', 'tinyint', 'decimal', 'numeric', 'float', 'real')\r\n                THEN COLUMN_NAME\r\n            ELSE 'Otro tipo de dato' END )\r\n,',')\r\n    AS COLUMN_NAME_WITH_QUOTES\r\nFROM INFORMATION_SCHEMA.COLUMNS T where T.table_name = '" + tabla + "')+')'' FROM " + tabla + "'";
+            var script_insert = @"
+        SELECT 'SELECT ''' +
+       (select 'INSERT INTO ""' + T.TABLE_NAME + '"" (' + STRING_AGG('""' + T.column_name + '""', ',') + ') VALUES ('
+        from INFORMATION_SCHEMA.columns T
+        where T.table_name = '"+tabla+ @"'
+        GROUP BY T.TABLE_NAME) + '' +
+       (SELECT STRING_AGG(
+                       (CASE
+                            WHEN DATA_TYPE IN
+                                ('varchar', 'nvarchar', 'char', 'nchar', 'text', 'ntext', 
+                                 'date', 'datetime', 'datetime2', 'smalldatetime', 'time', 'timestamp',
+                                 'binary', 'varbinary', 'image', 'uniqueidentifier', 'hierarchyid', 'xml') 
+                                THEN CONCAT('''''''+ISNULL([', COLUMN_NAME, '],NULL)+''''''')
+                            WHEN DATA_TYPE IN
+                                ('int', 'bit', 'bigint', 'smallint', 'tinyint', 'decimal', 'numeric', 'float', 'real', 
+                                 'money', 'smallmoney', 'binary', 'varbinary', 'rowversion', 'uniqueidentifier', 
+                                 'geometry', 'geography', 'sql_variant', 'cursor', 'table')
+
+                                THEN '''+CAST([' + COLUMN_NAME + '] AS VARCHAR)+'''
+                            ELSE 'Otro tipo de dato' END)
+                   , ',')
+                   AS COLUMN_NAME_WITH_QUOTES
+
+        FROM INFORMATION_SCHEMA.COLUMNS T
+        where T.table_name = '" + tabla+ @"') + ')'' AS SCRIPT FROM "+tabla+@"' as ""SCRIPT""";
 
             return script_insert;
         }
@@ -73,7 +101,7 @@ namespace ToolMigration.Logic.Transformation
                                     WHEN ic_included.included_columns IS NOT NULL THEN
                                         ' INCLUDE (' + ic_included.included_columns COLLATE Latin1_General_CI_AS + ')'  
                                     ELSE ''
-                                END COLLATE Latin1_General_CI_AS + ';' AS create_index_script
+                                END COLLATE Latin1_General_CI_AS + ';' AS script
                             FROM
                                 sys.indexes i
                             JOIN
@@ -110,7 +138,7 @@ namespace ToolMigration.Logic.Transformation
                             ' ADD CONSTRAINT ' + (fk.name) +
                             ' FOREIGN KEY ' + (parent_col.name) +
                             ' REFERENCES ' + (referenced_table.name) +
-                            '(' + (referenced_col.name) + ');' AS foreign_key_script
+                            '(' + (referenced_col.name) + ');' AS script
                         FROM
                             sys.foreign_keys fk
                         JOIN
@@ -145,7 +173,7 @@ namespace ToolMigration.Logic.Transformation
                           SELECT
                             'ALTER TABLE ' + (t.name) +
                             ' ADD CONSTRAINT ' + (kc.name) +
-                            ' PRIMARY KEY (' + STRING_AGG( (c.name), ', ') WITHIN GROUP (ORDER BY ic.key_ordinal) + ');' AS primary_key_script
+                            ' PRIMARY KEY (' + STRING_AGG( (c.name), ', ') WITHIN GROUP (ORDER BY ic.key_ordinal) + ');' AS script
                         FROM
                             sys.key_constraints kc
                         JOIN
@@ -168,35 +196,306 @@ namespace ToolMigration.Logic.Transformation
             return v_script;
         }
 
-        public string GenScriptTablesDefault(string tabla, List<DataTypeConvert> tipos)
+        public List<scriptList> GenScriptText(string script, string sqlcoonection)
         {
-            string v_script = string.Empty;
+            List<scriptList> list = new List<scriptList>();
 
-            v_script = "CREATE TABLE " + tabla.ToUpper() + " (";
-            
-            foreach (var item in tipos)
+
+            var sql_command = script;
+
+            using (SqlConnection connection = new SqlConnection(sqlcoonection))
             {
+                try
+                {
+                    connection.Open(); // Open the connection before executing commands
 
+                    SqlCommand command = new SqlCommand(sql_command, connection); // Specify the connection explicitly
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+
+                    
+
+                        while (reader.Read())
+                        {
+                            try // Handle potential data conversion errors within the loop
+                            {
+                                scriptList tab = new scriptList
+                                {
+                                    script = reader.GetString(reader.GetOrdinal("script"))
+                                    
+
+                                };
+                                list.Add(tab);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Error parsing data in row: {ex.Message}");
+                                // Consider logging the error or taking appropriate action
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error opening connection or executing command: {ex.Message}");
+                    // Consider logging the error or throwing a more specific exception
+                }
             }
-            
-            
-            v_script = " )";
 
 
 
+            return list;
 
 
-            return v_script;
         }
 
-        public string GenScriptTablesPerso(string tabla,List<DataTypeConvert> tipos)
+
+        public string GenScriptTablesDefault(string tabla, List<DataTypeConvert> tipos,string sqlconnection)
         {
             string v_script = string.Empty;
 
-            
+            v_script = "CREATE TABLE " + tabla.ToUpper() + " (  ";
+
+            Conn conn = new Conn();
+
+            List<DataTypeOrigenXTable> listaColumnas = conn.ListaColumnas(sqlconnection, tabla);
+
+            foreach(var item in listaColumnas)
+            {
+
+                v_script= v_script + item.COLUMN_NAME ;
+                v_script = v_script + " ";
+                v_script = v_script + " ";
+                //asigna el tipo de dato y la propiedad
+                foreach (var item2 in tipos)
+                {
+                    if (item.DATA_TYPE.ToUpper() == item2.Tipo.ToUpper())
+
+                    {
+                        if (item.DATA_LENGTH.Replace(" ", "") is not null)
+                        {
+                            if (item.DATA_LENGTH.Contains("MAX") && item.DATA_TYPE.ToUpper() == "VARCHAR")
+                            {
+                                v_script = v_script + " CLOB ";
+                                break;
+
+                            }
+                            else if (item.DATA_LENGTH.Contains("MAX") && item.DATA_TYPE.ToUpper() == "VARBINARY")
+                            {
+                                v_script = v_script + " BLOB ";
+                                break;
+                            }
+                            else if (item.DATA_LENGTH.Contains("MAX") && item.DATA_TYPE.ToUpper() == "NVARCHAR")
+                            {
+                                v_script = v_script + " NCLOB ";
+                                break;
+                            }
+                            else if (item.DATA_TYPE.Contains("VARCHAR"))
+                            {
+                                if (Convert.ToInt32(item.DATA_LENGTH.ToString()) > 4000)
+                                {
+                                    v_script = v_script + " CLOB ";
+                                    break;
+                                }
+                                else
+                                {
+                                    v_script = v_script + "  " + item2.Equivalencia.ToString();
+
+                                    v_script = v_script + " (" + item.DATA_LENGTH.ToString() + " )";
+                                    break;
+                                }
+
+                            }
+                            else
+                            {
+                                v_script = v_script + "  " + item2.Equivalencia;
+                                if (item.DATA_LENGTH.Replace(" ","").Length > 0)
+                                {
+                                    v_script = v_script + " (" + item.DATA_LENGTH + ") ";
+                                }
+                                else
+                                {
+                                    v_script = v_script + " " + item2.EqPropiedad + " ";
+                                }
+                                break;
+
+                            }
+                        }
+                        else
+                        {
+                            v_script = v_script + "  " + item2.Equivalencia;
+                            if (item.DATA_LENGTH.Replace(" ", "").Length > 0)
+                            {
+                                v_script = v_script + " (" + item.DATA_LENGTH + ") ";
+                            }
+                            else
+                            {
+                                v_script = v_script + " " + item2.EqPropiedad + " ";
+                            }
+                            break;
+
+                        }
+                     
+                         
+                      
+                       
+                    }
+
+                }
+                // asignar si es  nullable o no
+
+                if (item.IS_NULLABLE == true)
+                {
+                    v_script = v_script + " NULL ,";
+                }else
+                {
+                    v_script = v_script + " NOT NULL ,";
+                }
 
 
-            return v_script;
+
+
+            }
+            string resultado = v_script.Substring(0, v_script.Length - 1);
+
+            resultado = resultado + " )";
+
+
+            return resultado;
+        }
+
+        public string GenScriptTablesPerso(string tabla,List<DataTypeConvert> tipos,string SQL_CON)
+        {
+            string v_script = string.Empty;
+
+            v_script = "CREATE TABLE " + tabla.ToUpper() + " (  ";
+
+            Conn conn = new Conn();
+
+            List<DataTypeOrigenXTable> listaColumnas = conn.ListaColumnas(SQL_CON, tabla);
+
+            foreach (var item in listaColumnas)
+            {
+
+                v_script = v_script + item.COLUMN_NAME;
+                v_script = v_script + " ";
+                v_script = v_script + " ";
+                //asigna el tipo de dato y la propiedad
+                foreach (var item2 in tipos)
+                {
+                    if (item.DATA_TYPE.ToUpper() == item2.Tipo.ToUpper())
+                    {
+
+                        if (item2.PersoType.Replace(" ","") is not null && item2.PersoType.Contains("ingrese valores") == false)
+                        {
+                            v_script = v_script + "  " + item2.PersoType;
+
+                            if (item2.PropPersoType.Replace(" ", "") is not null)
+                            {
+                                if (item2.PropPersoType.Contains("("))
+                                {
+                                    v_script = v_script + " " + item2.PropPersoType + " ";
+                                }
+                                else
+                                {
+                                    v_script = v_script + " (" + item2.PropPersoType + ") ";
+                                }
+                                
+
+                            }
+                            break;
+
+                        }
+                        else
+                        {
+                            if (item.DATA_LENGTH.Replace(" ", "") is not null)
+                            {
+                                if (item.DATA_LENGTH.Contains("MAX") && item.DATA_TYPE.ToUpper() == "VARCHAR")
+                                {
+                                    v_script = v_script + " CLOB ";
+                                    break;
+
+                                }
+                                else if (item.DATA_LENGTH.Contains("MAX") && item.DATA_TYPE.ToUpper() == "VARBINARY")
+                                {
+                                    v_script = v_script + " BLOB ";
+                                    break;
+                                }
+                                else if (item.DATA_LENGTH.Contains("MAX") && item.DATA_TYPE.ToUpper() == "NVARCHAR")
+                                {
+                                    v_script = v_script + " NCLOB ";
+                                    break;
+                                }
+                                else if (item.DATA_TYPE.Contains("VARCHAR"))
+                                {
+                                    if (Convert.ToInt32(item.DATA_LENGTH.ToString()) > 4000)
+                                    {
+                                        v_script = v_script + " CLOB ";
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        v_script = v_script + "  " + item2.Equivalencia.ToString();
+
+                                        v_script = v_script + " (" + item.DATA_LENGTH.ToString() + " )";
+                                        break;
+                                    }
+
+                                }
+                                else
+                                {
+                                    v_script = v_script + "  " + item2.Equivalencia;
+                                    if (item.DATA_LENGTH.Replace(" ", "").Length > 0)
+                                    {
+                                        v_script = v_script + " (" + item.DATA_LENGTH + ") ";
+                                    }
+                                    else
+                                    {
+                                        v_script = v_script + " " + item2.EqPropiedad + " ";
+                                    }
+                                    break;
+
+                                }
+                            }
+                            else
+                            {
+                                v_script = v_script + "  " + item2.Equivalencia;
+                                if (item.DATA_LENGTH.Replace(" ", "").Length > 0)
+                                {
+                                    v_script = v_script + " (" + item.DATA_LENGTH + ") ";
+                                }
+                                else
+                                {
+                                    v_script = v_script + " " + item2.EqPropiedad + " ";
+                                }
+                                break;
+
+                            }
+                        }
+                    }
+                    
+                    }
+
+                // asignar si es  nullable o no
+
+                if (item.IS_NULLABLE == true)
+                {
+                    v_script = v_script + " NULL ,";
+                }
+                else
+                {
+                    v_script = v_script + " NOT NULL ,";
+                }
+
+
+            }
+            string resultado = v_script.Substring(0, v_script.Length - 1);
+
+            resultado = resultado + " )";
+
+
+            return resultado;
         }
 
         public List<DataTypeOrigenXTable> ColumTypeXTable(string tabla,string SQL_CON)

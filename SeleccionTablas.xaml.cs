@@ -1,5 +1,4 @@
 ﻿using GalaSoft.MvvmLight.Command;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
@@ -25,6 +24,13 @@ using static ToolMigration.Logic.DataMove.Equivalency;
 using System.Security.Cryptography.X509Certificates;
 using static System.Net.Mime.MediaTypeNames;
 using ToolMigration.Logic.Tools;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using Window = System.Windows.Window;
+using System.Diagnostics.Contracts;
+
+using Microsoft.Win32;
+using Microsoft.VisualBasic;
+
 
 
 namespace ToolMigration
@@ -70,6 +76,12 @@ namespace ToolMigration
             tablas_origen(sqlcon);
             sqlcon_data = sqlcon;
             oracon_data = oracon;
+
+            tab_migarcion.IsEnabled = false;
+            tab_conversion.IsEnabled = false;
+            tab_scripts.IsEnabled = false;
+            dt_tabla_origen.IsEnabled = false;
+            dt_tabla_destino.IsEnabled = false;
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -231,7 +243,7 @@ namespace ToolMigration
                             TablaDestinoDT dto = new TablaDestinoDT();
 
                             dto.TABLE_NAME = tabs.TABLE_NAME;
-                            dto.MARCAR = tabs.MARCAR;
+                            dto.MARCAR = false;
                             dto.NO = tabs.NO;
                             list.Add(dto);
                         }
@@ -517,6 +529,8 @@ namespace ToolMigration
 
                 dt_tabla_origen.IsEnabled = true;
 
+                dt_tabla_destino.IsEnabled = true;
+
                 //List<TablaDestinoDT> list = new List<TablaDestinoDT>();
 
                 //dt_tabla_destino.ItemsSource= list;
@@ -531,6 +545,10 @@ namespace ToolMigration
                 chk_marca_todo_origen.IsEnabled = true;
 
                 dt_tabla_origen.IsEnabled = true;
+
+                dt_tabla_origen.IsEnabled = false;
+
+                dt_tabla_destino.IsEnabled = false;
 
 
             }
@@ -550,6 +568,9 @@ namespace ToolMigration
 
                 dt_tabla_destino.IsEnabled = true;
 
+                dt_tabla_origen.IsEnabled = true;
+
+
             }
             else
             {
@@ -557,7 +578,9 @@ namespace ToolMigration
 
                 chk_marca_todo_origen.IsEnabled = true;
 
-                dt_tabla_destino.IsEnabled = true;
+                dt_tabla_destino.IsEnabled = false;
+                dt_tabla_origen.IsEnabled = false;
+
 
             }
 
@@ -582,25 +605,52 @@ namespace ToolMigration
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
+            string ruta = "";
 
-            string txt = (cmb_tipo_extencion.SelectedItem.ToString().Length <= 0) ? "sql" : cmb_tipo_extencion.SelectedItem.ToString();
+            if (txt_ruta_archivo.Text.Trim().Length == 0)
+            {
+             
 
-            string ruta = (txt_ruta_archivo.Text.Length <= 0) ? "C://script" : txt_ruta_archivo.Text;
+                System.Windows.MessageBox.Show("Seleccione el path para poder realizar la generación de scripts",
+                               "Error!",
+                               MessageBoxButton.OK,
+                               MessageBoxImage.Error);
 
-            ruta = ruta.Trim()+"."+ txt;
+
+
+                return;
+            }
+
+
+            ComboBoxItem selectedItem = cmb_tipo_extencion.SelectedItem as ComboBoxItem;
+
+            Guid guid = Guid.NewGuid();
+            string uniqueNumber = BitConverter.ToInt64(guid.ToByteArray(), 0).ToString();
+
+
+            if (selectedItem != null)
+            {
+                string selectedValue = selectedItem.Content.ToString();
+
+                ruta = (txt_ruta_archivo.Text.Length <= 0) ? "C:/script" : txt_ruta_archivo.Text + "/" + uniqueNumber + "." + selectedValue;
+            }
+            else
+            {
+                ruta = (txt_ruta_archivo.Text.Length <= 0) ? "C:/script" : txt_ruta_archivo.Text + "/" + uniqueNumber + ".txt";
+            }
 
 
 
-            proceso_crea_scripts(sqlcon_data, ListTablas.ToList(), ruta, chk_GenScript_tables.IsChecked.Value,chk_Convert_Manual.IsChecked.Value );
+            proceso_crea_scripts(sqlcon_data, ListTablas.ToList(), ruta, chk_GenScript_tables.IsChecked.Value, chk_Convert_Manual.IsChecked.Value);
 
-            
+            System.Windows.MessageBox.Show("Revise su archivo en : " + ruta.ToString(), "Confirmación", MessageBoxButton.OK, MessageBoxImage.Information);
 
 
 
 
         }
 
-        public void proceso_crea_scripts(string sql, List<TablasDestino> tablasDestinoList, string ruta,bool CreaTablas = false,bool perso = false)
+        public void proceso_crea_scripts(string sql, List<TablasDestino> tablasDestinoList, string ruta, bool CreaTablas = false, bool perso = false)
         {
 
             try
@@ -612,7 +662,7 @@ namespace ToolMigration
                     {
                         List<DataTypeConvert> dataTypeConverts = new List<DataTypeConvert>();
 
-                        foreach(var item in  dt_tabla_conversiones.Items )
+                        foreach (var item in dt_tabla_conversiones.Items)
                         {
                             if (item is DataTypeConvert tabs)
                             {
@@ -633,30 +683,63 @@ namespace ToolMigration
                         }
 
 
-                        sw.WriteLine("+=======+INICIA la creacion de scripts para creacion de tablas +=======+");
+                        sw.WriteLine("/*+=======+INICIA la creacion de scripts para creacion de tablas +=======+*/");
                         foreach (var item in tablasDestinoList)
                         {
                             var script_txt = string.Empty;
 
                             GenScriptDestino genScriptDestino = new GenScriptDestino();
-                            sw.WriteLine("Inicia tabla :" + item.TABLE_NAME);
+                            sw.WriteLine("/*Inicia creacion de tabla :" + item.TABLE_NAME + "*/");
 
-                            if ( perso == true)
+                            if (perso == true)
                             {
                                 Tools tools = new Tools();
 
-                               
-                                script_txt = genScriptDestino.GenScriptTablesPerso(item.TABLE_NAME, dataTypeConverts);
+                                script_txt = genScriptDestino.GenScriptTablesPerso(item.TABLE_NAME, dataTypeConverts, sql);
                             }
                             else
                             {
-                                script_txt = genScriptDestino.GenScriptTablesDefault(item.TABLE_NAME, dataTypeConverts);
+                                script_txt = genScriptDestino.GenScriptTablesDefault(item.TABLE_NAME, dataTypeConverts, sql);
                             }
-                            
+                            sw.WriteLine(script_txt.ToString());
+
+                            lstBoxScripting.Items.Add(script_txt);
+
+
+
+                            var script_txt2 = genScriptDestino.GenScriptPrimaryKey(item.TABLE_NAME);
+
+                            List<scriptList> script_primarykey = genScriptDestino.GenScriptText(script_txt2, sql);
+
+                            foreach (var scriptva in script_primarykey)
+                            {
+                                sw.WriteLine(scriptva.script.ToString());
+                                lstBoxScripting.Items.Add(scriptva.script.ToString());
+                            }
+
+                            var script_txt3 = genScriptDestino.GenScriptIndexes(item.TABLE_NAME);
+                            List<scriptList> scriptsIndex = genScriptDestino.GenScriptText(script_txt3 , sql);
+
+                            foreach (var scriptva in scriptsIndex)
+                            {
+                                sw.WriteLine(scriptva.script.ToString() + ";");
+                                lstBoxScripting.Items.Add(scriptva.script.ToString());
+                            }
+
+
                         }
-                        
-                        
-                        sw.WriteLine("+=======+INICIA la creacion de scripts para insercion de datos+=======+");
+
+
+                        sw.WriteLine("/*+=======+INICIA la creacion de scripts para insercion de datos+=======+*/");
+                        sw.WriteLine(" ");
+                        sw.WriteLine(" ");
+                        sw.WriteLine(" ");
+                        sw.WriteLine(" ");
+                        sw.WriteLine(" ");
+                        sw.WriteLine(" ");
+                        sw.WriteLine(" ");
+                        sw.WriteLine(" ");
+                        sw.WriteLine(" ");
 
                         foreach (var item in tablasDestinoList)
                         {
@@ -672,18 +755,46 @@ namespace ToolMigration
 
                             Scripting scripting = new Scripting();
 
+
+
                             lista_scripts = scripting.scriptListRead(sql, script_txt);
+
+
 
                             foreach (string script in lista_scripts)
                             {
+                                List<scriptList> scriptingList = new List<scriptList>();
 
-                                sw.WriteLine(script.ToString());
+                                scriptingList = genScriptDestino.GenScriptText(script.ToString(), sql);
+
+                                foreach (var itemScript in scriptingList)
+                                {
+                                    sw.WriteLine(itemScript.script.ToString()+";");
+
+                                }
+
                             }
 
                             sw.WriteLine("Finaliza tabla :" + item.TABLE_NAME);
 
 
+                            
+
+
+
                         }
+
+                        sw.WriteLine("/*+=======+INICIA la creacion de scripts para LLAVES FORANEAS de datos+=======+*/");
+                        sw.WriteLine(" ");
+                        sw.WriteLine(" ");
+                        sw.WriteLine(" ");
+                        sw.WriteLine(" ");
+                        sw.WriteLine(" ");
+                        sw.WriteLine(" ");
+                        sw.WriteLine(" ");
+                        sw.WriteLine(" ");
+                        sw.WriteLine(" ");
+
 
 
                     }
@@ -691,6 +802,8 @@ namespace ToolMigration
                 }
                 catch (Exception ex)
                 {
+
+                    System.Windows.MessageBox.Show(ex.Message);
                     Console.WriteLine("Error al crear el archivo: " + ex.Message);
 
                 }
@@ -708,10 +821,163 @@ namespace ToolMigration
 
 
         }
+        private void chk_cancela_destino_checked(object sender, EventArgs e)
+        {
+
+            tab_migarcion.IsEnabled = false;
+            tab_conversion.IsEnabled = false;
+            tab_scripts.IsEnabled = false;
+            dt_tabla_destino.IsEnabled = true;
+            dt_tabla_origen.IsEnabled = true;
+        }
+
+        private void proceso_migracion(string sql, List<TablasDestino> tablasDestinoList, string ruta, bool creaLog = false,bool peso = false)
+        {
+
+        }
+
+        private void chk_acepta_destino_Checked(object sender, RoutedEventArgs e)
+        {
+            if (dt_tabla_destino.Items.Count == 0)
+            {
+                System.Windows.MessageBox.Show("Seleccione correctamente las columnas a agregar para poder continuar con el proceso",
+                               "Error!",
+                               MessageBoxButton.OK,
+                               MessageBoxImage.Error);
+                chk_acepta_destino.IsChecked = false;
+                return;
+            }
+
+
+            if (chk_acepta_destino.IsChecked == true)
+            {
+                List<TablasDestino> list = new List<TablasDestino>();
+
+                foreach (var item in dt_tabla_destino.Items)
+                {
+                    if (item is TablaDestinoDT tabs)
+                    {
+                        TablasDestino dto = new TablasDestino();
+
+
+                        dto.TABLE_NAME = tabs.TABLE_NAME;
+
+                        list.Add(dto);
+
+                    }
+
+                }
+
+                ListTablas = list.ToList();
+
+
+
+                dt_tabla_destino.IsEnabled = false;
+                dt_tabla_origen.IsEnabled = false;
+                tab_scripts.IsEnabled = true;
+                tab_conversion.IsEnabled = true;
+                tab_migarcion.IsEnabled = true;
+            }
+            else
+            {
+                tab_migarcion.IsEnabled = false;
+                tab_conversion.IsEnabled = false;
+                tab_scripts.IsEnabled = false;
+                dt_tabla_destino.IsEnabled = true;
+                dt_tabla_origen.IsEnabled = true;
+            }
+
+
+        }
+
+    
+    
+
+        private void txt_ruta_archivo_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            using (var folderBrowserDialog = new FolderBrowserDialog())
+            {
+                // Mostrar el diálogo de selección de carpetas
+                DialogResult result = folderBrowserDialog.ShowDialog();
+
+                // Comprobar si el usuario seleccionó una carpeta
+                if (result == System.Windows.Forms.DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog.SelectedPath))
+                {
+                    // Obtener la ruta de la carpeta seleccionada
+                    string folderPath = folderBrowserDialog.SelectedPath;
+
+                    // Asignar la ruta seleccionada al TextBox
+                    txt_ruta_archivo.Text = folderPath;
+
+                    // Mostrar la ruta en un MessageBox (opcional)
+
+                }
+            }
+        }
+
+        private void txt_logPath_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            using (var folderBrowserDialog = new FolderBrowserDialog())
+            {
+                // Mostrar el diálogo de selección de carpetas
+                DialogResult result = folderBrowserDialog.ShowDialog();
+
+                // Comprobar si el usuario seleccionó una carpeta
+                if (result == System.Windows.Forms.DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDialog.SelectedPath))
+                {
+                    // Obtener la ruta de la carpeta seleccionada
+                    string folderPath = folderBrowserDialog.SelectedPath;
+
+                    // Asignar la ruta seleccionada al TextBox
+                    txt_logPath.Text = folderPath;
+
+                    // Mostrar la ruta en un MessageBox (opcional)
+
+                }
+            }
+        }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+
+            string ruta = "";
+
+            if (txt_logPath.Text.Trim().Length == 0 && (chk_gen_script_migra.IsChecked == true || chk_log_migra.IsChecked ==true))
+            {
+
+
+                System.Windows.MessageBox.Show("Seleccione el path para poder realizar la generación de scripts",
+                               "Error!",
+                               MessageBoxButton.OK,
+                               MessageBoxImage.Error);
+
+
+
+                return;
+            }
+
+
+            ComboBoxItem selectedItem = cmb_tipo_extencion.SelectedItem as ComboBoxItem;
+
+            Guid guid = Guid.NewGuid();
+            string uniqueNumber = BitConverter.ToInt64(guid.ToByteArray(), 0).ToString();
+
+
+            if (selectedItem != null)
+            {
+                string selectedValue = selectedItem.Content.ToString();
+
+                ruta = (txt_ruta_archivo.Text.Length <= 0) ? "C:/script" : txt_ruta_archivo.Text + "/" + uniqueNumber + "." + selectedValue;
+            }
+            else
+            {
+                ruta = (txt_ruta_archivo.Text.Length <= 0) ? "C:/script" : txt_ruta_archivo.Text + "/" + uniqueNumber + ".txt";
+            }
 
 
 
 
 
+        }
     }
 }

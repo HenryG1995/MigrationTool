@@ -32,7 +32,7 @@ namespace ToolMigration.Logic.Transformation
                 {
                     connection.Open(); 
 
-                    SqlCommand command = new SqlCommand(sqlcon, connection);
+                    SqlCommand command = new SqlCommand(script, connection);
 
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
