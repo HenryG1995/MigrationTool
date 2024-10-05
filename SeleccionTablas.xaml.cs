@@ -34,6 +34,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using System;
 using System.Diagnostics;
 using System.Windows.Media.Converters;
+using System.Reflection;
 
 
 namespace ToolMigration
@@ -97,7 +98,7 @@ namespace ToolMigration
             dt_tabla_destino.IsEnabled = false;
         }
 
-      
+
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -618,7 +619,7 @@ namespace ToolMigration
 
         }
 
-      
+
 
         private async Task proceso_crea_scripts(string sql, List<TablasDestino> tablasDestinoList, string ruta, bool CreaTablas = false, bool perso = false)
         {
@@ -660,12 +661,12 @@ namespace ToolMigration
 
                         }
 
-               
+
                         sw.WriteLine("/*+=======+INICIA la creacion de scripts para creacion de tablas +=======+*/");
 
                         foreach (var (item, index) in tablasDestinoList.Select((value, index) => (value, index)))
-       
-                      //  foreach (var item in tablasDestinoList)
+
+                        //  foreach (var item in tablasDestinoList)
                         {
                             var script_txt = string.Empty;
 
@@ -713,8 +714,8 @@ namespace ToolMigration
                             {
                                 // Aquí actualizamos la barra de progreso y el texto en la UI
                                 i++;
-                              
-                                double percentage = ((double)(index + 1) / total * 100)/3;
+
+                                double percentage = ((double)(index + 1) / total * 100) / 3;
                                 Debug.WriteLine($"Número: {item.TABLE_NAME}, Progreso: {percentage:F2}%");
 
                                 progressBar.Value = percentage;
@@ -723,7 +724,7 @@ namespace ToolMigration
 
                             await Task.Run(() => ActualizarBarraProgreso(progreso));
 
-                           
+
                         }
 
 
@@ -739,7 +740,7 @@ namespace ToolMigration
                         sw.WriteLine(" ");
 
 
-                        i=0;
+                        i = 0;
                         foreach (var (item, index) in tablasDestinoList.Select((value, index) => (value, index)))
                         {
                             var script_txt = "";
@@ -772,14 +773,14 @@ namespace ToolMigration
 
                             sw.WriteLine("Finaliza tabla :" + item.TABLE_NAME);
 
-                          
+
                             var progreso = new Progress<int>(valor =>
                             {
                                 // Aquí actualizamos la barra de progreso y el texto en la UI
                                 i++;
 
                                 double percentage = ((double)(index + 1) / total * 100) / 3;
-                                percentage = Math.Round(percentage, 2)+ 33.33;
+                                percentage = Math.Round(percentage, 2) + 33.33;
                                 Debug.WriteLine($"Número: {item.TABLE_NAME}, Progreso: {percentage:F2}%");
 
                                 progressBar.Value = percentage;
@@ -791,7 +792,7 @@ namespace ToolMigration
 
 
                         }
-                       
+
 
 
                         sw.WriteLine("/*+=======+INICIA la creacion de scripts para LLAVES FORANEAS de datos+=======+*/");
@@ -817,7 +818,7 @@ namespace ToolMigration
 
                             string script = genScriptDestino.GenScriptConstraintForeing(item.TABLE_NAME);
 
-                            script_foreing  = genScriptDestino.GenScriptText(script, sql);
+                            script_foreing = genScriptDestino.GenScriptText(script, sql);
 
 
                             foreach (var scriptva in script_foreing)
@@ -843,7 +844,7 @@ namespace ToolMigration
 
                         }
 
-                      
+
                         progressBar.Value = 100;
                         progressText.Text = "Progreso: 100%";
 
@@ -885,10 +886,6 @@ namespace ToolMigration
             dt_tabla_origen.IsEnabled = true;
         }
 
-        private void proceso_migracion(string sql, List<TablasDestino> tablasDestinoList, string ruta, bool creaLog = false,bool peso = false)
-        {
-
-        }
 
         private void chk_acepta_destino_Checked(object sender, RoutedEventArgs e)
         {
@@ -944,8 +941,6 @@ namespace ToolMigration
 
         }
 
-    
-    
 
         private void txt_ruta_archivo_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -995,10 +990,10 @@ namespace ToolMigration
 
         private async void Button_Click_2(object sender, RoutedEventArgs e)
         {
-            progressBar_Migraicion.Value = 0;
+            progressBar_Migracion.Value = 0;
             string ruta = "";
 
-            if (txt_logPath.Text.Trim().Length == 0 && (chk_gen_script_migra.IsChecked == true || chk_log_migra.IsChecked ==true))
+            if (txt_logPath.Text.Trim().Length == 0 && (chk_gen_script_migra.IsChecked == true || chk_log_migra.IsChecked == true))
             {
 
 
@@ -1062,40 +1057,34 @@ namespace ToolMigration
 
             }
 
-            await Task.Run(async () =>
-            {
+         
 
                 // Instanciamos la clase que contiene el método MigraCion
-               
+
 
 
                 // Llamamos al método MigraCion de manera asíncrona
-              await MigraCion(oracon_data, sqlcon_data, tablas, dataTypeConverts, genScript, genLog, genPerso, ruta, OverRid);
+                await MigraCion(oracon_data, sqlcon_data, tablas, dataTypeConverts, genScript, genLog, genPerso, ruta, OverRid);
 
 
-            });
+           
 
 
 
         }
-        public async Task ActualizarMigracionBar(double progreso)
+        public void ActualizarMigracionBar(IProgress<int> progreso)
         {
             // Simula una tarea en segundo plano (ejemplo: carga de datos)
 
-
-
-            progressBar_Migraicion.Value = progreso;
-        
-
-            if (progreso == 100)
+            for (int i = 0; i <= 100; i++)
             {
+                // Simulamos trabajo con retraso
+                Task.Delay(50).Wait();
 
-                System.Windows.MessageBox.Show("Finalizo la migracion !",
-                               "Exito!",
-                               MessageBoxButton.OK,
-                               MessageBoxImage.Information);
-           
+                // Informamos del progreso
+                progreso.Report(i);
             }
+
 
         }
 
@@ -1138,18 +1127,18 @@ namespace ToolMigration
 
 
 
-        
+
             bool genScriptTables = chk_GenScript_tables.IsChecked.Value;
             bool convertManual = chk_Convert_Manual.IsChecked.Value;
             var tablas = ListTablas.ToList();
 
             await proceso_crea_scripts(sqlcon_data, tablas, ruta, genScriptTables, convertManual);
 
-          
+
 
         }
 
-        
+
         public void ActualizarBarraProgreso(IProgress<int> progreso)
         {
             for (int i = 0; i <= 100; i++)
@@ -1169,7 +1158,7 @@ namespace ToolMigration
 
         public async Task MigraCion(string OracleConnection, string SqlConnection, List<TablasDestino> litaTablasDestino, List<DataTypeConvert> listDataTypesConvert, bool GenScript = false, bool GenLog = false, bool genPerso = false, string PathLogScript = "", bool OverrR = false)
         {
-
+            ProgressTextMigracion.Text = "Progreso: 0%";
             int maxThreads = Environment.ProcessorCount;
 
             var total = litaTablasDestino.Count;
@@ -1205,13 +1194,17 @@ namespace ToolMigration
 
                             double percentage = ((double)(index + 1) / total * 100) / 4;
                             percentage = Math.Round(percentage, 2);
-                            Debug.WriteLine($"Número: {tborrar.TABLE_NAME}, Progreso: {percentage:F2}%");
+                          //  Debug.WriteLine($"Número: {tborrar.TABLE_NAME}, Progreso: {percentage:F2}%");
                             progresot = percentage;
-                            progressBar_Migraicion.Value = percentage;
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                progressBar_Migracion.Value = percentage;
+                                ProgressTextMigracion.Text = "Progreso: " + Math.Round(percentage, 2) + "%";
+                            }));
 
                         });
 
-                        await Task.Run(() => ActualizarMigracionBar(progresot));
+                        await Task.Run(() => ActualizarMigracionBar(progreso));
 
 
 
@@ -1252,19 +1245,24 @@ namespace ToolMigration
 
                         var progreso = new Progress<int>(valor =>
                         {
-                            double percentage = ((double)(index + 1) / total * 100) / 7;
-                            percentage = Math.Round(percentage, 2);
-                            Debug.WriteLine($"Número: {item.TABLE_NAME}, Progreso: {percentage:F2}%");
-
+                            double percentage = ((double)(index + 1) / total * 100) / 4;
+                            percentage = Math.Round(percentage, 2) + 25.00;
+                          //  Debug.WriteLine($"Número: {item.TABLE_NAME}, Progreso: {percentage:F2}%");
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                progressBar_Migracion.Value = percentage;
+                                ProgressTextMigracion.Text = "Progreso: " + Math.Round(percentage, 2) + "%";
+                            }));
                             progresot = percentage;
+
                         });
 
-                        await Task.Run(() => ActualizarMigracionBar(progresot));
+                        await Task.Run(() => ActualizarMigracionBar(progreso));
 
                     }
 
                     // migracion de datos con bulk
-                    foreach (var item in litaTablasDestino)
+                    foreach (var (item, index) in litaTablasDestino.Select((value, index) => (value, index)))
                     {
                         Conn conn = new Conn();
 
@@ -1274,10 +1272,26 @@ namespace ToolMigration
 
                         Debug.WriteLine(item.TABLE_NAME + " , insercion realizada = " + result);
 
+                        var progreso = new Progress<int>(valor =>
+                        {
+                            double percentage = ((double)(index + 1) / total * 100) / 4;
+                            percentage = Math.Round(percentage, 2) + 50.00;
+                           // Debug.WriteLine($"Número: {item.TABLE_NAME}, Progreso: {percentage:F2}%");
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                progressBar_Migracion.Value = percentage;
+                                ProgressTextMigracion.Text = "Progreso: " + Math.Round(percentage, 2) + "%";
+                            }));
+                            progresot = percentage;
+                        });
+
+                        await Task.Run(() => ActualizarMigracionBar(progreso));
+
+
                     }
 
                     // creacion de foraneas 
-                    foreach (var item in litaTablasDestino)
+                    foreach (var (item, index) in litaTablasDestino.Select((value, index) => (value, index)))
                     {
                         GenScriptDestino genScriptDestino = new GenScriptDestino();
 
@@ -1292,6 +1306,20 @@ namespace ToolMigration
                             var result = conn.executeQueryOracle(OracleConnection, item2.script.Replace(";", ""));
 
                         }
+                        var progreso = new Progress<int>(valor =>
+                        {
+                            double percentage = ((double)(index + 1) / total * 100) / 4;
+                            percentage = Math.Round(percentage, 2) + 75.00;
+                        //    Debug.WriteLine($"Número: {item.TABLE_NAME}, Progreso: {percentage:F2}%");
+                            Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                progressBar_Migracion.Value = percentage;
+                                ProgressTextMigracion.Text = "Progreso: " + Math.Round(percentage, 2) + "%";
+                            }));
+                            progresot = percentage;
+                        });
+
+                        await Task.Run(() => ActualizarMigracionBar(progreso));
 
                     }
 
