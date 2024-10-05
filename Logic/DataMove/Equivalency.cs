@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using ToolMigration.Logic.DataModels;
+using System.Diagnostics;
 
 namespace ToolMigration.Logic.DataMove
 {
@@ -148,7 +149,7 @@ namespace ToolMigration.Logic.DataMove
                 dto.NO = 11;
                 dto.Tipo = "FLOAT";
                 dto.Propiedad = "";
-                dto.Equivalencia = "FLOAT";
+                dto.Equivalencia = "BINARY_DOUBLE";
                 dto.EqPropiedad = "";
                 dto.PersoType = "ingrese valores";
                 dto.PropPersoType = "ingrese valores";
@@ -479,7 +480,7 @@ namespace ToolMigration.Logic.DataMove
             // Mostrar los mapeos de tipos de datos
             foreach (var mapeo in mappings.MapeosDeTipos)
             {
-                Console.WriteLine($"SQL Server: {mapeo.SqlServerType}, Oracle: {mapeo.OracleType}, Observación: {mapeo.Observacion}");
+                Debug.WriteLine($"SQL Server: {mapeo.SqlServerType}, Oracle: {mapeo.OracleType}, Observación: {mapeo.Observacion}");
             }
 
 

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Documents;
-
+using System.Diagnostics;
 namespace ToolMigration.Logic.DataMove
 {
     internal class SelectorD
@@ -28,7 +28,7 @@ namespace ToolMigration.Logic.DataMove
                     {
                         //Oracle
 
-                        Console.WriteLine("Inicia la obtencion de tablas para oracle");
+                        Debug.WriteLine("Inicia la obtencion de tablas para oracle");
 
 
 
@@ -38,7 +38,7 @@ namespace ToolMigration.Logic.DataMove
                     {
                         //SQL
 
-                        Console.WriteLine("Inicia la obtencion de tablas para SQL");
+                        Debug.WriteLine("Inicia la obtencion de tablas para SQL");
 
 
                         break;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Diagnostics;
 namespace ToolMigration.Logic.DataMove
 {
     using System;
@@ -108,7 +108,7 @@ namespace ToolMigration.Logic.DataMove
             // Mostrar los tipos de datos
             foreach (var tipo in oracleTypes.TiposDeDatos)
             {
-                Console.WriteLine($"Nombre: {tipo.Nombre}, Observación: {tipo.Observacion}, Tipo en C#: {tipo.TipoCSharp.Name}");
+                Debug.WriteLine($"Nombre: {tipo.Nombre}, Observación: {tipo.Observacion}, Tipo en C#: {tipo.TipoCSharp.Name}");
             }
         }
     }

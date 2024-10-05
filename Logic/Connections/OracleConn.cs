@@ -15,7 +15,9 @@ using System.Threading.Tasks;
 using System.Windows.Documents;
 using ToolMigration.Logic.DataModels;
 using ToolMigration.Logic.Transformation;
-
+using System.Transactions;
+using System.Data.Common;
+using System.Diagnostics;
 
 namespace ToolMigration.Logic.Connections
 {
@@ -53,7 +55,7 @@ namespace ToolMigration.Logic.Connections
                 try
                 {
                     connection.Open();
-                    Console.WriteLine("Conexión establecida correctamente");
+                    Debug.WriteLine("Conexión establecida correctamente");
 
                     // Aquí puedes ejecutar tus consultas SQL
                     OracleCommand command = new OracleCommand("SELECT SYS_GUID() UUID FROM DUAL", connection);
@@ -62,7 +64,7 @@ namespace ToolMigration.Logic.Connections
                     while (reader.Read())
                     {
                         // Procesar los datos
-                        Console.WriteLine(reader["UUID"].ToString());
+                        Debug.WriteLine(reader["UUID"].ToString());
                     }
 
                     reader.Close();
@@ -70,7 +72,7 @@ namespace ToolMigration.Logic.Connections
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error al conectar: " + ex.Message);
+                    Debug.WriteLine("Error al conectar: " + ex.Message);
                     return false;
                 }
             };
@@ -97,14 +99,14 @@ namespace ToolMigration.Logic.Connections
                 try
                 {
                     connection.Open(); // Open the connection before executing commands
-                    Console.WriteLine("Conexion SQL establecida correctamente");
+                    Debug.WriteLine("Conexion SQL establecida correctamente");
 
                     SqlCommand command = new SqlCommand("SELECT NEWID() AS UUID", connection); // Specify the connection explicitly
                     SqlDataReader reader = command.ExecuteReader();
 
                     while (reader.Read())
                     {
-                        Console.WriteLine(reader["UUID"].ToString());
+                        Debug.WriteLine(reader["UUID"].ToString());
                     }
 
                     reader.Close();
@@ -112,7 +114,7 @@ namespace ToolMigration.Logic.Connections
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error: " + ex.Message);
+                    Debug.WriteLine("Error: " + ex.Message);
                     return false;
                 }
             }
@@ -164,7 +166,7 @@ namespace ToolMigration.Logic.Connections
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine($"Error parsing data in row: {ex.Message}");
+                                Debug.WriteLine($"Error parsing data in row: {ex.Message}");
                                 // Consider logging the error or taking appropriate action
                             }
                         }
@@ -172,7 +174,7 @@ namespace ToolMigration.Logic.Connections
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error opening connection or executing command: {ex.Message}");
+                    Debug.WriteLine($"Error opening connection or executing command: {ex.Message}");
                     // Consider logging the error or throwing a more specific exception
                 }
             }
@@ -246,7 +248,7 @@ namespace ToolMigration.Logic.Connections
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error al ejecutar la consulta: " + ex.Message);
+                Debug.WriteLine("Error al ejecutar la consulta: " + ex.Message);
             }
 
             return result.ToList();
@@ -281,7 +283,7 @@ namespace ToolMigration.Logic.Connections
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine($"Error parsing data in row: {ex.Message}");
+                                Debug.WriteLine($"Error parsing data in row: {ex.Message}");
                                 // Consider logging the error or taking appropriate action
                             }
                         }
@@ -289,7 +291,7 @@ namespace ToolMigration.Logic.Connections
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error opening connection or executing command: {ex.Message}");
+                    Debug.WriteLine($"Error opening connection or executing command: {ex.Message}");
                     // Consider logging the error or throwing a more specific exception
                 }
             }
@@ -308,7 +310,7 @@ namespace ToolMigration.Logic.Connections
                 try
                 {
                     connection.Open();
-                    Console.WriteLine("Conexion SQL establecida correctamente");
+                    Debug.WriteLine("Conexion SQL establecida correctamente");
                     SqlCommand command = new SqlCommand(sql);
                     SqlDataReader reader = command.ExecuteReader();
 
@@ -338,7 +340,7 @@ namespace ToolMigration.Logic.Connections
                 try
                 {
                     connection.Open();
-                    Console.WriteLine("Conexión establecida correctamente");
+                    Debug.WriteLine("Conexión establecida correctamente");
 
                     // Aquí puedes ejecutar tus consultas SQL
                     OracleCommand command = new OracleCommand(sql, connection);
@@ -353,7 +355,7 @@ namespace ToolMigration.Logic.Connections
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error al conectar: " + ex.Message);
+                    Debug.WriteLine("Error al conectar: " + ex.Message);
                     return dt;
                 }
             }
@@ -383,7 +385,7 @@ namespace ToolMigration.Logic.Connections
                 try
                 {
                     connection.Open();
-                    Console.WriteLine("Conexion SQL establecida correctamente");
+                    Debug.WriteLine("Conexion SQL establecida correctamente");
                     SqlCommand command = new SqlCommand(sql);
                     SqlDataReader reader = command.ExecuteReader();
 
@@ -403,6 +405,228 @@ namespace ToolMigration.Logic.Connections
 
            
         }
+
+
+        public bool executeQueryOracle(string ConnectionSQlOra, string ScriptOra)
+        {
+            using (var connection = new OracleConnection(ConnectionSQlOra))
+            {
+                OracleTransaction transaction = null;
+                connection.Open();
+                transaction = connection.BeginTransaction();
+                try
+                {
+                    // Abrimos la conexión
+                    
+                    Debug.WriteLine("Conexión a la base de datos exitosa.");
+
+                    // comando para ejecutar el script
+                    using (var command = new OracleCommand(ScriptOra, connection))
+                    {
+                        command.Transaction = transaction;
+                        // Ejecutamos el comando
+                        command.ExecuteNonQuery();
+                        Debug.WriteLine("Tabla creada exitosamente.");
+                        
+                    }
+                    transaction.Commit();
+                    return true;
+                }
+                catch (OracleException ex)
+                {
+                    // Manejo de errores
+                    Debug.WriteLine($"Error al ejecutar la consulta: {ex.Message}");
+                    transaction.Rollback();
+                    return false; 
+                }
+                finally
+                {
+                    // Cerramos la conexión
+                    if (connection.State == System.Data.ConnectionState.Open)
+                    {
+                        connection.Close();
+                        Debug.WriteLine("Conexión cerrada.");
+                    }
+
+                }
+            }
+        }
+
+
+        public DataTable DataOrigen(string sqlConn, string Tabla)
+        {
+            var dt = new DataTable();
+
+            Conn conn = new Conn();
+
+            List<DataTypeOrigenXTable> listaColumnas = conn.ListaColumnas(sqlConn, Tabla);
+            var script = "select ";
+            foreach (var item in listaColumnas)
+            {
+                script = script + "\"" +item.COLUMN_NAME + "\",";
+
+            }
+            script = script.Remove(script.Length - 1);
+            script = script +" from [" + Tabla + "]";
+            
+
+            using (var connection = new SqlConnection(sqlConn))
+            {
+                try
+                {
+                    connection.Open(); // Open the connection before executing commands
+
+                    SqlCommand command = new SqlCommand(script, connection); // Specify the connection explicitly
+
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                       dt.Load(reader);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error opening connection or executing command: {ex.Message}");
+                    // Consider logging the error or throwing a more specific exception
+                }
+
+            }
+
+
+                return dt;
+        }
+
+        public bool BorrarTablas(string tabla,string OraConn)
+        {
+            var script = "drop table "+tabla+" cascade constraints purge";
+            
+           var ret  = executeQueryOracle(OraConn, script);
+
+            return ret;
+
+        }
+
+        public bool Destino(DataTable dataOrigen, string tabla, string connectionOra,List<DataTypeConvert> _listaDeConversiones)
+        {
+            try
+            {
+                // Procesamos el DataTable para convertir tipos de datos según la lista de conversiones
+                PreprocessDataTable(dataOrigen, _listaDeConversiones);
+
+                // Establecemos la conexión con Oracle
+                using (OracleConnection connection = new OracleConnection(connectionOra))
+                {
+                    // Abrimos la conexión
+                    connection.Open();
+
+                    // Configuramos OracleBulkCopy para hacer la inserción masiva
+                    using (OracleBulkCopy bulkCopy = new OracleBulkCopy(connection))
+                    {
+                        // Asignamos el nombre de la tabla de destino
+                        bulkCopy.DestinationTableName = tabla;
+
+                        // Mapeamos automáticamente las columnas del DataTable a la tabla en Oracle
+                        foreach (DataColumn column in dataOrigen.Columns)
+                        {
+                            bulkCopy.ColumnMappings.Add(column.ColumnName, column.ColumnName);
+                        }
+
+                        // Realizamos la inserción masiva desde el DataTable
+                        bulkCopy.WriteToServer(dataOrigen);
+                    }
+                }
+
+                return true; // Si todo sale bien, retornamos true
+            }
+            catch (Exception ex)
+            {
+                // Manejo de errores
+                Debug.WriteLine($"Error en la operación de inserción masiva: {ex.Message}");
+                return false; // Si ocurre un error, retornamos false
+            }
+        }
+
+        private void PreprocessDataTable(DataTable dataOrigen,List<DataTypeConvert> _listaDeConversiones)
+        {
+            // Iteramos a través de todas las columnas del DataTable
+            foreach (DataColumn column in dataOrigen.Columns)
+            {
+                // Buscamos el tipo de dato de la columna en la lista de conversiones
+                var conversion = _listaDeConversiones.Find(c => c.Tipo == column.DataType.Name.ToUpper());
+
+                // Si encontramos una equivalencia, aplicamos la conversión
+                if (conversion != null)
+                {
+                    foreach (DataRow row in dataOrigen.Rows)
+                    {
+                        // Verificamos si la celda tiene un valor nulo
+                        if (row[column.ColumnName] == DBNull.Value)
+                        {
+                            row[column.ColumnName] = GetDefaultValueForColumn(column);
+                        }
+
+                        // Conversión para tipos específicos
+                        if (conversion.Equivalencia == "BLOB" && column.DataType == typeof(byte[]))
+                        {
+                            // Lógica de conversión específica para BLOB
+                            row[column.ColumnName] = ConvertToBlob(row[column.ColumnName]);
+                        }
+                        else if (conversion.Equivalencia == "CLOB" && column.DataType == typeof(string))
+                        {
+                            // Lógica de conversión específica para CLOB
+                            row[column.ColumnName] = ConvertToClob(row[column.ColumnName]);
+                        }
+                        // Puedes agregar más conversiones específicas aquí si es necesario
+                    }
+                }
+            }
+        }
+
+        private object GetDefaultValueForColumn(DataColumn column)
+        {
+            // Definimos valores por defecto para cada tipo de dato común en Oracle
+            if (column.DataType == typeof(string))
+            {
+                return ""; // Cadena vacía para columnas VARCHAR
+            }
+            else if (column.DataType == typeof(DateTime))
+            {
+                return DateTime.Now; // Fecha actual para columnas de fecha
+            }
+            else if (column.DataType == typeof(int) || column.DataType == typeof(long))
+            {
+                return 0; // Cero para columnas numéricas
+            }
+            else if (column.DataType == typeof(decimal) || column.DataType == typeof(double))
+            {
+                return 0.0m; // Cero para columnas decimales o de punto flotante
+            }
+            else if (column.DataType == typeof(bool))
+            {
+                return 0; // Falso para columnas booleanas, tratadas como enteros (0 = falso)
+            }
+            else if (column.DataType == typeof(Guid))
+            {
+                return Guid.NewGuid(); // Genera un nuevo GUID para columnas de tipo GUID
+            }
+            else
+            {
+                // En caso de que no reconozcamos el tipo de dato, devolvemos DBNull
+                return DBNull.Value;
+            }
+        }
+
+        private object ConvertToBlob(object data)
+        {
+            // Convierte el dato a BLOB si es necesario
+            return data; // Lógica personalizada para convertir a BLOB
+        }
+
+        private object ConvertToClob(object data)
+        {
+            // Convierte el dato a CLOB si es necesario
+            return data; // Lógica personalizada para convertir a CLOB
+        }
+
 
     }
 }

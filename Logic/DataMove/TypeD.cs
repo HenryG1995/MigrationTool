@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
+
 
 namespace ToolMigration.Logic.DataMove
 {
@@ -93,7 +95,7 @@ namespace ToolMigration.Logic.DataMove
             // Mostrar los tipos de datos
             foreach (var tipo in sqlTypes.TiposDeDatos)
             {
-                Console.WriteLine($"Nombre: {tipo.Nombre}, Observación: {tipo.Observacion}, Tipo en C#: {tipo.TipoCSharp.Name}");
+                Debug.WriteLine($"Nombre: {tipo.Nombre}, Observación: {tipo.Observacion}, Tipo en C#: {tipo.TipoCSharp.Name}");
             }
         }
     }

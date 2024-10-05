@@ -257,13 +257,6 @@ C:\Users\henry\Downloads\Nueva carpeta\MigrationTool\obj\Debug\net8.0-windows\re
 C:\Users\henry\Downloads\Nueva carpeta\MigrationTool\obj\Debug\net8.0-windows\ToolMigration.pdb
 C:\Users\henry\Downloads\Nueva carpeta\MigrationTool\obj\Debug\net8.0-windows\ToolMigration.genruntimeconfig.cache
 C:\Users\henry\Downloads\Nueva carpeta\MigrationTool\obj\Debug\net8.0-windows\ref\ToolMigration.dll
-C:\Users\Henry\Desktop\PG\MigrationTool\obj\Debug\net8.0-windows\ToolMigration.csproj.AssemblyReference.cache
-C:\Users\Henry\Desktop\PG\MigrationTool\obj\Debug\net8.0-windows\HomeWin.g.cs
-C:\Users\Henry\Desktop\PG\MigrationTool\obj\Debug\net8.0-windows\MainWindow.g.cs
-C:\Users\Henry\Desktop\PG\MigrationTool\obj\Debug\net8.0-windows\SeleccionTablas.g.cs
-C:\Users\Henry\Desktop\PG\MigrationTool\obj\Debug\net8.0-windows\App.g.cs
-C:\Users\Henry\Desktop\PG\MigrationTool\obj\Debug\net8.0-windows\ToolMigration_MarkupCompile.cache
-C:\Users\Henry\Desktop\PG\MigrationTool\obj\Debug\net8.0-windows\ToolMigration_MarkupCompile.lref
 C:\Users\Henry\Desktop\PG\MigrationTool\bin\Debug\net8.0-windows\ToolMigration.exe
 C:\Users\Henry\Desktop\PG\MigrationTool\bin\Debug\net8.0-windows\ToolMigration.deps.json
 C:\Users\Henry\Desktop\PG\MigrationTool\bin\Debug\net8.0-windows\ToolMigration.runtimeconfig.json
@@ -297,7 +290,6 @@ C:\Users\Henry\Desktop\PG\MigrationTool\bin\Debug\net8.0-windows\System.Windows.
 C:\Users\Henry\Desktop\PG\MigrationTool\bin\Debug\net8.0-windows\Oracle.ManagedDataAccess.dll
 C:\Users\Henry\Desktop\PG\MigrationTool\bin\Debug\net8.0-windows\System.ClientModel.dll
 C:\Users\Henry\Desktop\PG\MigrationTool\bin\Debug\net8.0-windows\System.DirectoryServices.Protocols.dll
-C:\Users\Henry\Desktop\PG\MigrationTool\bin\Debug\net8.0-windows\System.Formats.Asn1.dll
 C:\Users\Henry\Desktop\PG\MigrationTool\bin\Debug\net8.0-windows\System.IdentityModel.Tokens.Jwt.dll
 C:\Users\Henry\Desktop\PG\MigrationTool\bin\Debug\net8.0-windows\System.Memory.Data.dll
 C:\Users\Henry\Desktop\PG\MigrationTool\bin\Debug\net8.0-windows\System.Runtime.Caching.dll
@@ -335,6 +327,13 @@ C:\Users\Henry\Desktop\PG\MigrationTool\bin\Debug\net8.0-windows\runtimes\linux\
 C:\Users\Henry\Desktop\PG\MigrationTool\bin\Debug\net8.0-windows\runtimes\osx\lib\net8.0\System.DirectoryServices.Protocols.dll
 C:\Users\Henry\Desktop\PG\MigrationTool\bin\Debug\net8.0-windows\runtimes\win\lib\net8.0\System.DirectoryServices.Protocols.dll
 C:\Users\Henry\Desktop\PG\MigrationTool\bin\Debug\net8.0-windows\runtimes\win\lib\net8.0\System.Runtime.Caching.dll
+C:\Users\Henry\Desktop\PG\MigrationTool\obj\Debug\net8.0-windows\ToolMigration.csproj.AssemblyReference.cache
+C:\Users\Henry\Desktop\PG\MigrationTool\obj\Debug\net8.0-windows\HomeWin.g.cs
+C:\Users\Henry\Desktop\PG\MigrationTool\obj\Debug\net8.0-windows\MainWindow.g.cs
+C:\Users\Henry\Desktop\PG\MigrationTool\obj\Debug\net8.0-windows\SeleccionTablas.g.cs
+C:\Users\Henry\Desktop\PG\MigrationTool\obj\Debug\net8.0-windows\App.g.cs
+C:\Users\Henry\Desktop\PG\MigrationTool\obj\Debug\net8.0-windows\ToolMigration_MarkupCompile.cache
+C:\Users\Henry\Desktop\PG\MigrationTool\obj\Debug\net8.0-windows\ToolMigration_MarkupCompile.lref
 C:\Users\Henry\Desktop\PG\MigrationTool\obj\Debug\net8.0-windows\HomeWin.baml
 C:\Users\Henry\Desktop\PG\MigrationTool\obj\Debug\net8.0-windows\MainWindow.baml
 C:\Users\Henry\Desktop\PG\MigrationTool\obj\Debug\net8.0-windows\SeleccionTablas.baml

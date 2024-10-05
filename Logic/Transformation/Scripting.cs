@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Documents;
 using ToolMigration.Logic.DataModels;
+using System.Diagnostics;
 
 namespace ToolMigration.Logic.Transformation
 {
@@ -44,7 +45,7 @@ namespace ToolMigration.Logic.Transformation
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine($"Error parseando  data en la fila: {ex.Message}");
+                                Debug.WriteLine($"Error parseando  data en la fila: {ex.Message}");
                                
                             }
                         }
@@ -52,7 +53,7 @@ namespace ToolMigration.Logic.Transformation
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"error al abrir comando y conexion : {ex.Message}");
+                    Debug.WriteLine($"error al abrir comando y conexion : {ex.Message}");
               
                 }
             }

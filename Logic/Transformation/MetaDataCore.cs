@@ -34,8 +34,8 @@ namespace ToolMigration.Logic.Transformation
 
             query = @"
                 SELECT
-                    TABLE_NAME,
-                    COLUMN_NAME,
+                    UPPER(TABLE_NAME) AS TABLE_NAME,
+                    UPPER(COLUMN_NAME) AS COLUMN_NAME,
                     ORDINAL_POSITION,
                     ISNULL(column_default, '') AS COLUMN_DEFAULT,
                     case when IS_NULLABLE ='YES' THEN convert(bit , 1) ELSE convert(bit , 0) END IS_NULLABLE

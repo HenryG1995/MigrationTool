@@ -12,6 +12,7 @@ using System.DirectoryServices.ActiveDirectory;
 using System.Windows.Controls;
 using System.Windows.Media.Media3D;
 using Microsoft.Data.SqlClient;
+using System.Diagnostics;
 namespace ToolMigration.Logic.Transformation
 {
     public class GenScriptDestino
@@ -43,7 +44,7 @@ namespace ToolMigration.Logic.Transformation
                     escritor.WriteLine("¡Hola desde C#!");
                 }
 
-                Console.WriteLine("Archivo creado correctamente: " + rutaArchivo);
+                Debug.WriteLine("Archivo creado correctamente: " + rutaArchivo);
 
 
             });
@@ -87,22 +88,22 @@ namespace ToolMigration.Logic.Transformation
         {
             string v_script = string.Empty;
 
-            v_script = @"
-                            SELECT
+
+            v_script = @"  SELECT
                                 'CREATE ' +
-                                CASE WHEN i.is_unique = 1 THEN 'UNIQUE' ELSE '' END COLLATE Latin1_General_CI_AS +  
-                             
+                                CASE WHEN i.is_unique = 1 THEN 'UNIQUE' ELSE '' END COLLATE Latin1_General_CI_AS +
+
                                     + ' INDEX ' +
-                                 (i.name) COLLATE Latin1_General_CI_AS +  
-                                ' ON ' +  (t.name) COLLATE Latin1_General_CI_AS + ' (' +
-                                STRING_AGG( (c.name), ', ') WITHIN GROUP (ORDER BY ic.key_ordinal)
-                                COLLATE Latin1_General_CI_AS + ')' +  
+                                 UPPER(i.name) COLLATE Latin1_General_CI_AS +
+                                ' ON ' +  '""'+(UPPER(t.name))+'""' COLLATE Latin1_General_CI_AS + ' (' +
+                                STRING_AGG( '""'+(UPPER(c.name))+'""', ', ') WITHIN GROUP (ORDER BY ic.key_ordinal)
+                                COLLATE Latin1_General_CI_AS + ')' +
                                 CASE
                                     WHEN ic_included.included_columns IS NOT NULL THEN
-                                        ' INCLUDE (' + ic_included.included_columns COLLATE Latin1_General_CI_AS + ')'  
+                                        ' INCLUDE (' + ic_included.included_columns COLLATE Latin1_General_CI_AS + ')'
                                     ELSE ''
                                 END COLLATE Latin1_General_CI_AS + ';' AS script
-                            FROM
+                             FROM
                                 sys.indexes i
                             JOIN
                                 sys.tables t ON i.object_id = t.object_id
@@ -125,6 +126,44 @@ namespace ToolMigration.Logic.Transformation
                             GROUP BY
                                 i.name, i.is_unique, i.type_desc, t.name, ic_included.included_columns;";
 
+            //v_script = @"
+            //                SELECT
+            //                    'CREATE ' +
+            //                    CASE WHEN i.is_unique = 1 THEN 'UNIQUE' ELSE '' END COLLATE Latin1_General_CI_AS +  
+                             
+            //                        + ' INDEX ' +
+            //                     (i.name) COLLATE Latin1_General_CI_AS +  
+            //                    ' ON ' +  (t.name) COLLATE Latin1_General_CI_AS + ' (' +
+            //                    STRING_AGG( ("+"\""+@"c.name"+"\""+@"), ', ') WITHIN GROUP (ORDER BY ic.key_ordinal)
+            //                    COLLATE Latin1_General_CI_AS + ')' +  
+            //                    CASE
+            //                        WHEN ic_included.included_columns IS NOT NULL THEN
+            //                            ' INCLUDE (' + ic_included.included_columns COLLATE Latin1_General_CI_AS + ')'  
+            //                        ELSE ''
+            //                    END COLLATE Latin1_General_CI_AS + ';' AS script
+            //                FROM
+            //                    sys.indexes i
+            //                JOIN
+            //                    sys.tables t ON i.object_id = t.object_id
+            //                JOIN
+            //                    sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id
+            //                JOIN
+            //                    sys.columns c ON ic.object_id = c.object_id AND ic.column_id = c.column_id
+            //                LEFT JOIN
+            //                    (
+            //                        SELECT ic2.object_id, ic2.index_id,
+            //                               STRING_AGG( (c2.name), ', ') AS included_columns
+            //                        FROM sys.index_columns ic2
+            //                        JOIN sys.columns c2 ON ic2.object_id = c2.object_id AND ic2.column_id = c2.column_id
+            //                        WHERE ic2.is_included_column = 1
+            //                        GROUP BY ic2.object_id, ic2.index_id
+            //                    ) ic_included ON i.object_id = ic_included.object_id AND i.index_id = ic_included.index_id
+            //                WHERE
+            //                    t.name = '" + tabla.ToString() + @"' 
+                             
+            //                GROUP BY
+            //                    i.name, i.is_unique, i.type_desc, t.name, ic_included.included_columns;";
+
             return v_script;
         }
 
@@ -132,13 +171,12 @@ namespace ToolMigration.Logic.Transformation
         {
             var v_script = string.Empty;
 
-            v_script = @"
-                        SELECT
-                            'ALTER TABLE ' +  (parent_table.name) +
-                            ' ADD CONSTRAINT ' + (fk.name) +
-                            ' FOREIGN KEY ' + (parent_col.name) +
-                            ' REFERENCES ' + (referenced_table.name) +
-                            '(' + (referenced_col.name) + ');' AS script
+            v_script = @"    SELECT
+                            'ALTER TABLE ' +  '""'+UPPER(parent_table.name)+'""' +
+                            ' ADD CONSTRAINT ' + UPPER(fk.name) +
+                            ' FOREIGN KEY ' +( UPPER(  '(""'+parent_col.name+'"")') )+
+                            ' REFERENCES ' + UPPER(  '""'+referenced_table.name+'""') +
+                            '(' + UPPER(  '""'+referenced_col.name+'""') + ');' AS script
                         FROM
                             sys.foreign_keys fk
                         JOIN
@@ -161,6 +199,35 @@ namespace ToolMigration.Logic.Transformation
                         WHERE
                             parent_table.name = '" + tabla + "';";
 
+            //v_script = @"
+            //            SELECT
+            //                'ALTER TABLE ' +  UPPER(parent_table.name) +
+            //                ' ADD CONSTRAINT ' + UPPER(fk.name) +
+            //                ' FOREIGN KEY ' + UPPER(  " + "\""+@"parent_col.name"+"\""+ @") +
+            //                ' REFERENCES ' + UPPER(  " + "\""+@"referenced_table.name"+"\""+ @" ) +
+            //                '(' + UPPER(  " + "\""+@"referenced_col.name"+"\""+@") + ');' AS script
+            //            FROM
+            //                sys.foreign_keys fk
+            //            JOIN
+            //                sys.foreign_key_columns fkc
+            //                ON fk.object_id = fkc.constraint_object_id
+            //            JOIN
+            //                sys.columns parent_col
+            //                ON fkc.parent_object_id = parent_col.object_id
+            //                AND fkc.parent_column_id = parent_col.column_id
+            //            JOIN
+            //                sys.columns referenced_col
+            //                ON fkc.referenced_object_id = referenced_col.object_id
+            //                AND fkc.referenced_column_id = referenced_col.column_id
+            //            JOIN
+            //                sys.tables parent_table
+            //                ON fk.parent_object_id = parent_table.object_id
+            //            JOIN
+            //                sys.tables referenced_table
+            //                ON fk.referenced_object_id = referenced_table.object_id
+            //            WHERE
+            //                parent_table.name = '" + tabla + "';";
+
             return v_script;
         }
 
@@ -171,9 +238,9 @@ namespace ToolMigration.Logic.Transformation
 
             v_script = @"
                           SELECT
-                            'ALTER TABLE ' + (t.name) +
-                            ' ADD CONSTRAINT ' + (kc.name) +
-                            ' PRIMARY KEY (' + STRING_AGG( (c.name), ', ') WITHIN GROUP (ORDER BY ic.key_ordinal) + ');' AS script
+                            'ALTER TABLE ' + UPPER( " + "'\"'+"+@"t.name" + "+'\"'" + @") +
+                            ' ADD CONSTRAINT ' + UPPER(kc.name) +
+                            ' PRIMARY KEY (' + STRING_AGG( UPPER( " + "'\"'+" + @"c.name" + "+'\"'" + @"), ', ') WITHIN GROUP (ORDER BY ic.key_ordinal) + ');' AS script
                         FROM
                             sys.key_constraints kc
                         JOIN
@@ -189,7 +256,7 @@ namespace ToolMigration.Logic.Transformation
                             AND ic.column_id = c.column_id
                         WHERE
                             kc.type = 'PK' -- 'PK' indica clave primaria
-                            AND t.name = '"+tabla.ToString()+@"' 
+                            AND t.name = '" +tabla.ToString()+@"' 
                         GROUP BY
                             kc.name, t.name;";
 
@@ -230,7 +297,7 @@ namespace ToolMigration.Logic.Transformation
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine($"Error parsing data in row: {ex.Message}");
+                                Debug.WriteLine($"Error parsing data in row: {ex.Message}");
                                 // Consider logging the error or taking appropriate action
                             }
                         }
@@ -238,7 +305,7 @@ namespace ToolMigration.Logic.Transformation
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error opening connection or executing command: {ex.Message}");
+                    Debug.WriteLine($"Error opening connection or executing command: {ex.Message}");
                     // Consider logging the error or throwing a more specific exception
                 }
             }
@@ -264,7 +331,7 @@ namespace ToolMigration.Logic.Transformation
             foreach(var item in listaColumnas)
             {
 
-                v_script= v_script + item.COLUMN_NAME ;
+                v_script= v_script + "\"" + item.COLUMN_NAME+ "\"";
                 v_script = v_script + " ";
                 v_script = v_script + " ";
                 //asigna el tipo de dato y la propiedad
@@ -291,7 +358,7 @@ namespace ToolMigration.Logic.Transformation
                                 v_script = v_script + " NCLOB ";
                                 break;
                             }
-                            else if (item.DATA_TYPE.Contains("VARCHAR"))
+                            else if (item.DATA_TYPE.ToUpper().Contains("VARCHAR"))
                             {
                                 if (Convert.ToInt32(item.DATA_LENGTH.ToString()) > 4000)
                                 {
@@ -306,6 +373,9 @@ namespace ToolMigration.Logic.Transformation
                                     break;
                                 }
 
+                            }else if (item.DATA_TYPE.ToUpper() == "FLOAT")
+                            {
+                                v_script = v_script + " FLOAT ";
                             }
                             else
                             {
@@ -378,7 +448,7 @@ namespace ToolMigration.Logic.Transformation
             foreach (var item in listaColumnas)
             {
 
-                v_script = v_script + item.COLUMN_NAME;
+                v_script = v_script + "\"" + item.COLUMN_NAME + "\"";
                 v_script = v_script + " ";
                 v_script = v_script + " ";
                 //asigna el tipo de dato y la propiedad
@@ -442,6 +512,10 @@ namespace ToolMigration.Logic.Transformation
                                         break;
                                     }
 
+                                }
+                                else if (item.DATA_TYPE == "FLOAT")
+                                {
+                                    v_script = v_script + " FLOAT ";
                                 }
                                 else
                                 {
