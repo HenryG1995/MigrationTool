@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ToolMigration"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="698">
+        Title="MainWindow" Height="450" Width="698" WindowStartupLocation="CenterScreen" WindowStyle="ToolWindow">
     <Grid x:Name="gridConexion">
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>

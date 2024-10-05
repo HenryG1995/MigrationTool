@@ -1,28 +1,15 @@
 ﻿
 using Microsoft.Data.SqlClient;
 using Oracle.ManagedDataAccess.Client;
-using System;
-using System.Reflection;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Data;
-using System.Data.SqlTypes;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Documents;
+using System.Diagnostics;
 using ToolMigration.Logic.DataModels;
 using ToolMigration.Logic.Transformation;
-using System.Transactions;
-using System.Data.Common;
-using System.Diagnostics;
 
 namespace ToolMigration.Logic.Connections
 {
- 
-   public class Conn
+
+    public class Conn 
     {
        
         ConnString conections = new ConnString();
@@ -426,7 +413,7 @@ namespace ToolMigration.Logic.Connections
                         command.Transaction = transaction;
                         // Ejecutamos el comando
                         command.ExecuteNonQuery();
-                        Debug.WriteLine("Tabla creada exitosamente.");
+                 
                         
                     }
                     transaction.Commit();
@@ -455,23 +442,22 @@ namespace ToolMigration.Logic.Connections
 
         public DataTable DataOrigen(string sqlConn, string Tabla)
         {
-            var dt = new DataTable();
-
-            Conn conn = new Conn();
-
-            List<DataTypeOrigenXTable> listaColumnas = conn.ListaColumnas(sqlConn, Tabla);
-            var script = "select ";
-            foreach (var item in listaColumnas)
-            {
-                script = script + "\"" +item.COLUMN_NAME + "\",";
-
-            }
-            script = script.Remove(script.Length - 1);
-            script = script +" from [" + Tabla + "]";
-            
-
             using (var connection = new SqlConnection(sqlConn))
             {
+                var dt = new DataTable();
+
+                Conn conn = new Conn();
+
+                List<DataTypeOrigenXTable> listaColumnas = conn.ListaColumnas(sqlConn, Tabla);
+                var script = "select ";
+                foreach (var item in listaColumnas)
+                {
+                    script = script + "\"" + item.COLUMN_NAME + "\",";
+
+                }
+                script = script.Remove(script.Length - 1);
+                script = script + " from [" + Tabla + "]";
+
                 try
                 {
                     connection.Open(); // Open the connection before executing commands
@@ -489,10 +475,12 @@ namespace ToolMigration.Logic.Connections
                     // Consider logging the error or throwing a more specific exception
                 }
 
+                return dt;
+
             }
 
 
-                return dt;
+               
         }
 
         public bool BorrarTablas(string tabla,string OraConn)
@@ -516,23 +504,35 @@ namespace ToolMigration.Logic.Connections
                 using (OracleConnection connection = new OracleConnection(connectionOra))
                 {
                     // Abrimos la conexión
+                    OracleTransaction transaction = null;
                     connection.Open();
-
-                    // Configuramos OracleBulkCopy para hacer la inserción masiva
-                    using (OracleBulkCopy bulkCopy = new OracleBulkCopy(connection))
-                    {
-                        // Asignamos el nombre de la tabla de destino
-                        bulkCopy.DestinationTableName = tabla;
-
-                        // Mapeamos automáticamente las columnas del DataTable a la tabla en Oracle
-                        foreach (DataColumn column in dataOrigen.Columns)
+                    transaction = connection.BeginTransaction();
+                    try
+                    {  // Configuramos OracleBulkCopy para hacer la inserción masiva
+                        using (OracleBulkCopy bulkCopy = new OracleBulkCopy(connection))
                         {
-                            bulkCopy.ColumnMappings.Add(column.ColumnName, column.ColumnName);
+                            // Asignamos el nombre de la tabla de destino
+                            bulkCopy.DestinationTableName = tabla;
+
+                            // Mapeamos automáticamente las columnas del DataTable a la tabla en Oracle
+                            foreach (DataColumn column in dataOrigen.Columns)
+                            {
+                                bulkCopy.ColumnMappings.Add(column.ColumnName, column.ColumnName);
+                            }
+
+                            // Realizamos la inserción masiva desde el DataTable
+                            bulkCopy.WriteToServer(dataOrigen);
+                            transaction.Commit();
                         }
 
-                        // Realizamos la inserción masiva desde el DataTable
-                        bulkCopy.WriteToServer(dataOrigen);
                     }
+                    catch(Exception ex)
+                    {
+                        transaction.Rollback();
+                        connection.Dispose();
+                        return false;
+                    }
+                  
                 }
 
                 return true; // Si todo sale bien, retornamos true
@@ -626,7 +626,6 @@ namespace ToolMigration.Logic.Connections
             // Convierte el dato a CLOB si es necesario
             return data; // Lógica personalizada para convertir a CLOB
         }
-
-
+        
     }
 }

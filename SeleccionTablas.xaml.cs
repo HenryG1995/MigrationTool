@@ -1,40 +1,15 @@
-﻿using GalaSoft.MvvmLight.Command;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Data;
+using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Forms;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using ToolMigration.Logic.Connections;
 using ToolMigration.Logic.DataModels;
-using ToolMigration.Logic.Transformation;
-using System.IO;
-using System.Collections.Generic;
-using Binding = System.Windows.Data.Binding;
-using static ToolMigration.Logic.DataMove.Equivalency;
-using System.Security.Cryptography.X509Certificates;
-using static System.Net.Mime.MediaTypeNames;
 using ToolMigration.Logic.Tools;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using ToolMigration.Logic.Transformation;
+using static ToolMigration.Logic.DataMove.Equivalency;
 using Window = System.Windows.Window;
-using System.Diagnostics.Contracts;
-using System.Threading.Tasks;
-using Microsoft.Win32;
-using Microsoft.VisualBasic;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System;
-using System.Diagnostics;
-using System.Windows.Media.Converters;
-using System.Reflection;
 
 
 namespace ToolMigration
@@ -44,7 +19,7 @@ namespace ToolMigration
     /// </summary>
     public partial class SeleccionTablas : Window
     {
-
+        public string rutaArchivoLog = "C:\\log.txt";
         public string sqlcon_data { get; set; }
         public string oracon_data { get; set; }
         public List<ItemDataGrid> listaT;
@@ -295,17 +270,6 @@ namespace ToolMigration
 
                 dt_tabla_origen.Items.Refresh();
 
-
-                //chk_marca_todo_origen.IsEnabled = true;
-                //chk_marca_todos_destino.IsEnabled = true;
-                //chk_sel_individual_origen.IsEnabled = true;
-                //chk_sel_individual_destino.IsEnabled = true;
-                //dt_tabla_origen.IsEnabled = true;
-
-
-
-
-
             }
 
 
@@ -524,12 +488,6 @@ namespace ToolMigration
             dt_tabla_origen.IsEnabled = true;
 
 
-            //chk_marca_todo_origen.IsEnabled = false;
-            //chk_sel_individual_origen.IsEnabled = false;
-            //chk_sel_individual_destino.IsEnabled = false;
-
-
-
         }
 
         private void chk_sel_individual_origen_Checked(object sender, RoutedEventArgs e)
@@ -547,9 +505,6 @@ namespace ToolMigration
 
                 dt_tabla_destino.IsEnabled = true;
 
-                //List<TablaDestinoDT> list = new List<TablaDestinoDT>();
-
-                //dt_tabla_destino.ItemsSource= list;
 
             }
             else
@@ -986,10 +941,28 @@ namespace ToolMigration
             }
         }
 
+        private async Task Bloqueo_Interfaz(bool bloquear = false)
+        {
+            await Dispatcher.InvokeAsync(() =>
+            {
+                btn_migrar.IsEnabled = !bloquear;
+                tab_conversion.IsEnabled = !bloquear;
+                tab_migarcion.IsEnabled = !bloquear;
+                tab_scripts.IsEnabled = !bloquear;
+                tab_selector.IsEnabled = !bloquear;
+                chk_gen_script_migra.IsEnabled = !bloquear;
+                chk_log_migra.IsEnabled = !bloquear;
+                chk_OverRide_Migra.IsEnabled = !bloquear;
+                txt_logPath.IsEnabled = !bloquear;
+            });
 
+        }
 
         private async void Button_Click_2(object sender, RoutedEventArgs e)
         {
+            await Bloqueo_Interfaz(true);
+
+
             progressBar_Migracion.Value = 0;
             string ruta = "";
 
@@ -1004,6 +977,9 @@ namespace ToolMigration
 
                 return;
             }
+            
+             rutaArchivoLog = string.IsNullOrWhiteSpace(txt_logPath.Text) ? rutaArchivoLog : txt_logPath.Text;
+ 
 
 
             ComboBoxItem selectedItem = cmb_tipo_extencion.SelectedItem as ComboBoxItem;
@@ -1022,10 +998,7 @@ namespace ToolMigration
             {
                 ruta = (txt_ruta_archivo.Text.Length <= 0) ? "C:/script" : txt_ruta_archivo.Text + "/" + uniqueNumber + ".txt";
             }
-            //Thread hilo = new Thread(new ThreadStart(Migracion(sqlcon_data, ListTablas.ToList(), true, true, true)));
-
-
-
+        
             string oracleConn = "miCadenaOracle";
             string sqlConn = "miCadenaSql";
             var tablas = ListTablas.ToList();
@@ -1057,18 +1030,22 @@ namespace ToolMigration
 
             }
 
-         
 
-                // Instanciamos la clase que contiene el método MigraCion
+            Thread migrationThread = new Thread(() =>
+            {
+                MigraCion(oracon_data, sqlcon_data, tablas, dataTypeConverts, genScript, genLog, genPerso, ruta, OverRid);
+            });
 
+            // Inicia el hilo
+            migrationThread.Start();
+            if (migrationThread.IsAlive == false)
+            {
+                System.Windows.MessageBox.Show("Finaliza migracion.",
+                               "Favor valida en tu IDE preferido (SqlDeveloper/Datagrip/Toad)",
+                               MessageBoxButton.OK,
+                               MessageBoxImage.Information);
 
-
-                // Llamamos al método MigraCion de manera asíncrona
-                await MigraCion(oracon_data, sqlcon_data, tablas, dataTypeConverts, genScript, genLog, genPerso, ruta, OverRid);
-
-
-           
-
+            }
 
 
         }
@@ -1158,12 +1135,14 @@ namespace ToolMigration
 
         public async Task MigraCion(string OracleConnection, string SqlConnection, List<TablasDestino> litaTablasDestino, List<DataTypeConvert> listDataTypesConvert, bool GenScript = false, bool GenLog = false, bool genPerso = false, string PathLogScript = "", bool OverrR = false)
         {
-            ProgressTextMigracion.Text = "Progreso: 0%";
+
+
+
             int maxThreads = Environment.ProcessorCount;
 
             var total = litaTablasDestino.Count;
-            var i = 0;
-            double progresot = 0;
+        
+
 
             if (genPerso is true)
             {
@@ -1171,71 +1150,75 @@ namespace ToolMigration
             }
             else
             {
-                //Parallel.For(0, maxThreads, i =>
-                //{
-                Conn translateData = new Conn();
+              
                 //creacion de tablas con llave primaria sin foraneas 
                 if (OverrR == true)
                 {
-                    //borrado de tablas 14.2857
-                    //                    foreach (var tborrar in (litaTablasDestino))
-                    foreach (var (tborrar, index) in litaTablasDestino.Select((value, index) => (value, index)))
+                    // opción de paralelismo que limite el uso de hilos si es necesario.
+                    ParallelOptions parallelOptions = new ParallelOptions
                     {
-                        var conn = new Conn();
+                        MaxDegreeOfParallelism = Environment.ProcessorCount // Usa tantos hilos como núcleos disponibles
+                    };
+                    Conn translateData = new Conn();
+                    double startPercentage = 0;  // Inicio de este bloque
+                    double endPercentage = 25;   // Fin de este bloque
 
-                        var resul = conn.BorrarTablas(tborrar.TABLE_NAME, OracleConnection);
+                    // Usamos Parallel.ForEach para borrar las tablas en paralelo
+                    Parallel.ForEach(litaTablasDestino.Select((value, index) => (value, index)), parallelOptions, async (tborrarWithIndex) =>
+                    {
+                        var (tborrar, index) = tborrarWithIndex;
 
+                        // Se debe crear una nueva conexión por cada hilo
+
+                        var resul = translateData.BorrarTablas(tborrar.TABLE_NAME, OracleConnection);
                         Debug.WriteLine("Tabla : " + tborrar.TABLE_NAME + " Estado de borrado de tabla : " + resul);
 
+                        // Calculamos el progreso
+                        double percentage = startPercentage + (((double)(index + 1) / total) * (endPercentage - startPercentage));
 
-                        var progreso = new Progress<int>(valor =>
+                        // Actualizamos el progreso de manera segura en la UI usando Dispatcher
+                        await Dispatcher.InvokeAsync(() =>
                         {
-
-
-                            double percentage = ((double)(index + 1) / total * 100) / 4;
-                            percentage = Math.Round(percentage, 2);
-                          //  Debug.WriteLine($"Número: {tborrar.TABLE_NAME}, Progreso: {percentage:F2}%");
-                            progresot = percentage;
-                            Dispatcher.BeginInvoke(new Action(() =>
-                            {
-                                progressBar_Migracion.Value = percentage;
-                                ProgressTextMigracion.Text = "Progreso: " + Math.Round(percentage, 2) + "%";
-                            }));
-
+                            // Actualizamos la barra de progreso y el texto de la UI de manera segura
+                            progressBar_Migracion.Value = percentage;
+                            ProgressTextMigracion.Text = $"Progreso: {percentage.ToString("F2")}%";
                         });
 
-                        await Task.Run(() => ActualizarMigracionBar(progreso));
 
 
+                    });
 
-
-                    }
-                    //creacion completa de tablas
-                    foreach (var (item, index) in litaTablasDestino.Select((value, index) => (value, index)))
+                    //CREACION DE TABLAS EN PARALELL
+                    startPercentage = 25;  // Inicio de este bloque
+                    endPercentage = 50;   // Fin de este bloque
+                    Parallel.ForEach(litaTablasDestino.Select((value, index) => (value, index)), parallelOptions, async (itemWithIndex) =>
                     {
+                        var (item, index) = itemWithIndex;
+
+                        // Crear una nueva conexión por cada hilo
+
                         GenScriptDestino genScript = new GenScriptDestino();
-                        var conn = new Conn();
 
                         var resul = false;
-                        //creacion de  tabla
+
+                        // Creación de tabla
                         var script = genScript.GenScriptTablesDefault(item.TABLE_NAME, listDataTypesConvert.ToList(), SqlConnection);
-
                         var result = translateData.executeQueryOracle(OracleConnection, script);
-
                         Debug.WriteLine("Tabla : " + item.TABLE_NAME + " Estado de creacion de tabla : " + result);
-                        //creacion de llave primaria
-                        var script_primaryk = genScript.GenScriptPrimaryKey(item.TABLE_NAME);
 
+                        // Creación de llave primaria
+                        var script_primaryk = genScript.GenScriptPrimaryKey(item.TABLE_NAME);
                         var listScriptPrimaryky = genScript.GenScriptText(script_primaryk, SqlConnection);
+
                         foreach (var item2 in listScriptPrimaryky)
                         {
                             resul = translateData.executeQueryOracle(OracleConnection, item2.script.Replace(";", ""));
-                            Debug.WriteLine("Tabla : " + item.TABLE_NAME + " Estado de creacion de llave primaria : " + result);
+                            Debug.WriteLine("Tabla : " + item.TABLE_NAME + " Estado de creacion de llave primaria : " + resul);
                         }
-                        //creacion de indices
-                        var scritp_index = genScript.GenScriptIndexes(item.TABLE_NAME);
 
-                        var scriptindexlist = genScript.GenScriptText(scritp_index, SqlConnection);
+                        // Creación de índices
+                        var script_index = genScript.GenScriptIndexes(item.TABLE_NAME);
+                        var scriptindexlist = genScript.GenScriptText(script_index, SqlConnection);
 
                         foreach (var item2 in scriptindexlist)
                         {
@@ -1243,85 +1226,91 @@ namespace ToolMigration
                             Debug.WriteLine("Tabla : " + item.TABLE_NAME + " Estado de creacion de indices: " + result);
                         }
 
-                        var progreso = new Progress<int>(valor =>
-                        {
-                            double percentage = ((double)(index + 1) / total * 100) / 4;
-                            percentage = Math.Round(percentage, 2) + 25.00;
-                          //  Debug.WriteLine($"Número: {item.TABLE_NAME}, Progreso: {percentage:F2}%");
-                            Dispatcher.BeginInvoke(new Action(() =>
-                            {
-                                progressBar_Migracion.Value = percentage;
-                                ProgressTextMigracion.Text = "Progreso: " + Math.Round(percentage, 2) + "%";
-                            }));
-                            progresot = percentage;
+                        // Actualización del progreso
+                        double percentage = startPercentage + (((double)(index + 1) / total) * (endPercentage - startPercentage));
 
+                        // Actualizamos el progreso de manera segura en la UI usando Dispatcher
+                        await Dispatcher.InvokeAsync(() =>
+                        {
+                            // Actualizamos la barra de progreso y el texto de la UI de manera segura
+                            progressBar_Migracion.Value = percentage;
+                            ProgressTextMigracion.Text = $"Progreso: {percentage.ToString("F2")}%";
                         });
 
-                        await Task.Run(() => ActualizarMigracionBar(progreso));
+                    });
 
-                    }
+                    //INSERCION DE DATOS EN PARALLEL
 
-                    // migracion de datos con bulk
-                    foreach (var (item, index) in litaTablasDestino.Select((value, index) => (value, index)))
+
+                    startPercentage = 50;  // Inicio de este bloque
+                    endPercentage = 75;   // Fin de este bloque
+
+                    Parallel.ForEach(litaTablasDestino.Select((value, index) => (value, index)), parallelOptions, async (itemWithIndex) =>
                     {
-                        Conn conn = new Conn();
+                        var (item, index) = itemWithIndex;
 
-                        var dtorigen = conn.DataOrigen(SqlConnection, item.TABLE_NAME);
+                        // Crear una nueva conexión por cada hilo
 
-                        var result = conn.Destino(dtorigen, item.TABLE_NAME, OracleConnection, listDataTypesConvert.ToList());
+                        // Obtener datos de origen
+                        var dtorigen = translateData.DataOrigen(SqlConnection, item.TABLE_NAME);
 
+                        // Realizar inserción en el destino (Oracle)
+                        var result = translateData.Destino(dtorigen, item.TABLE_NAME, OracleConnection, listDataTypesConvert.ToList());
                         Debug.WriteLine(item.TABLE_NAME + " , insercion realizada = " + result);
 
-                        var progreso = new Progress<int>(valor =>
+                        // Actualización del progreso
+                        double percentage = startPercentage + (((double)(index + 1) / total) * (endPercentage - startPercentage));
+
+                        // Actualizamos el progreso de manera segura en la UI usando Dispatcher
+                        await Dispatcher.InvokeAsync(() =>
                         {
-                            double percentage = ((double)(index + 1) / total * 100) / 4;
-                            percentage = Math.Round(percentage, 2) + 50.00;
-                           // Debug.WriteLine($"Número: {item.TABLE_NAME}, Progreso: {percentage:F2}%");
-                            Dispatcher.BeginInvoke(new Action(() =>
-                            {
-                                progressBar_Migracion.Value = percentage;
-                                ProgressTextMigracion.Text = "Progreso: " + Math.Round(percentage, 2) + "%";
-                            }));
-                            progresot = percentage;
+                            // Actualizamos la barra de progreso y el texto de la UI de manera segura
+                            progressBar_Migracion.Value = percentage;
+                            ProgressTextMigracion.Text = $"Progreso: {percentage.ToString("F2")}%";
                         });
 
-                        await Task.Run(() => ActualizarMigracionBar(progreso));
+                    });
 
-
-                    }
-
-                    // creacion de foraneas 
-                    foreach (var (item, index) in litaTablasDestino.Select((value, index) => (value, index)))
+                    startPercentage = 75;  // Inicio de este bloque
+                    endPercentage = 100;   // Fin de este bloque
+                    Parallel.ForEach(litaTablasDestino.Select((value, index) => (value, index)), parallelOptions, async (itemWithIndex) =>
                     {
+                        var (item, index) = itemWithIndex;
+
+                        // Generar el script para las llaves foráneas
                         GenScriptDestino genScriptDestino = new GenScriptDestino();
-
                         var script_foraneas = genScriptDestino.GenScriptConstraintForeing(item.TABLE_NAME);
-
                         List<scriptList> lista_script = genScriptDestino.GenScriptText(script_foraneas, SqlConnection);
 
+                        // Ejecutar el script de llaves foráneas
                         foreach (var item2 in lista_script)
                         {
-                            Conn conn = new Conn();
+                            // Crear una nueva conexión por cada hilo
 
-                            var result = conn.executeQueryOracle(OracleConnection, item2.script.Replace(";", ""));
+                            var result = translateData.executeQueryOracle(OracleConnection, item2.script.Replace(";", ""));
+                            Debug.WriteLine($"Tabla: {item.TABLE_NAME}, Ejecución de llave foránea = {result}");
 
                         }
-                        var progreso = new Progress<int>(valor =>
+
+                        // Actualización del progreso
+                        double percentage = startPercentage + (((double)(index + 1) / total) * (endPercentage - startPercentage));
+                        await Dispatcher.InvokeAsync(() =>
                         {
-                            double percentage = ((double)(index + 1) / total * 100) / 4;
-                            percentage = Math.Round(percentage, 2) + 75.00;
-                        //    Debug.WriteLine($"Número: {item.TABLE_NAME}, Progreso: {percentage:F2}%");
-                            Dispatcher.BeginInvoke(new Action(() =>
-                            {
-                                progressBar_Migracion.Value = percentage;
-                                ProgressTextMigracion.Text = "Progreso: " + Math.Round(percentage, 2) + "%";
-                            }));
-                            progresot = percentage;
+                            // Actualizamos la barra de progreso y el texto de la UI de manera segura
+                            progressBar_Migracion.Value = percentage;
+                            ProgressTextMigracion.Text = $"Progreso: {percentage.ToString("F2")}%";
                         });
+                    });
 
-                        await Task.Run(() => ActualizarMigracionBar(progreso));
+                    System.Windows.MessageBox.Show("fin de la migracion.");
 
-                    }
+                    double percentage = 100;
+                    await Dispatcher.InvokeAsync(() =>
+                    {
+                        // Actualizamos la barra de progreso y el texto de la UI de manera segura
+                        progressBar_Migracion.Value = percentage;
+                        ProgressTextMigracion.Text = $"Progreso: {percentage.ToString("F2")}%";
+                    });
 
                 }
                 else
@@ -1345,6 +1334,7 @@ namespace ToolMigration
 
             }
 
+            await Bloqueo_Interfaz(false);
         }
 
 
