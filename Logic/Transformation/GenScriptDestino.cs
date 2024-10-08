@@ -93,16 +93,12 @@ namespace ToolMigration.Logic.Transformation
                                 'CREATE ' +
                                 CASE WHEN i.is_unique = 1 THEN 'UNIQUE' ELSE '' END COLLATE Latin1_General_CI_AS +
 
-                                    + ' INDEX ' +
-                                 UPPER(i.name) COLLATE Latin1_General_CI_AS +
+                                    + ' INDEX ' 
+                                +  '""'+ UPPER(i.name) +  '""' COLLATE Latin1_General_CI_AS +
                                 ' ON ' +  '""'+(UPPER(t.name))+'""' COLLATE Latin1_General_CI_AS + ' (' +
                                 STRING_AGG( '""'+(UPPER(c.name))+'""', ', ') WITHIN GROUP (ORDER BY ic.key_ordinal)
                                 COLLATE Latin1_General_CI_AS + ')' +
-                                CASE
-                                    WHEN ic_included.included_columns IS NOT NULL THEN
-                                        ' INCLUDE (' + ic_included.included_columns COLLATE Latin1_General_CI_AS + ')'
-                                    ELSE ''
-                                END COLLATE Latin1_General_CI_AS + ';' AS script
+                                 ';' AS script
                              FROM
                                 sys.indexes i
                             JOIN
@@ -173,7 +169,7 @@ namespace ToolMigration.Logic.Transformation
 
             v_script = @"    SELECT
                             'ALTER TABLE ' +  '""'+UPPER(parent_table.name)+'""' +
-                            ' ADD CONSTRAINT ' + UPPER(fk.name) +
+                            ' ADD CONSTRAINT ' + '""'+UPPER(fk.name)+'""' +
                             ' FOREIGN KEY ' +( UPPER(  '(""'+parent_col.name+'"")') )+
                             ' REFERENCES ' + UPPER(  '""'+referenced_table.name+'""') +
                             '(' + UPPER(  '""'+referenced_col.name+'""') + ');' AS script
@@ -236,11 +232,10 @@ namespace ToolMigration.Logic.Transformation
 
             string v_script = string.Empty;
 
-            v_script = @"
-                          SELECT
-                            'ALTER TABLE ' + UPPER( " + "'\"'+"+@"t.name" + "+'\"'" + @") +
-                            ' ADD CONSTRAINT ' + UPPER(kc.name) +
-                            ' PRIMARY KEY (' + STRING_AGG( UPPER( " + "'\"'+" + @"c.name" + "+'\"'" + @"), ', ') WITHIN GROUP (ORDER BY ic.key_ordinal) + ');' AS script
+            v_script = @"                                          SELECT
+                            'ALTER TABLE ' + UPPER( '""'+t.name+'""') +
+                            ' ADD CONSTRAINT ' +  '""'+UPPER(kc.name)+'""'+
+                            ' PRIMARY KEY (' + STRING_AGG( UPPER( '""'+c.name+'""'), ', ') WITHIN GROUP (ORDER BY ic.key_ordinal) + ');' AS script
                         FROM
                             sys.key_constraints kc
                         JOIN
@@ -256,7 +251,7 @@ namespace ToolMigration.Logic.Transformation
                             AND ic.column_id = c.column_id
                         WHERE
                             kc.type = 'PK' -- 'PK' indica clave primaria
-                            AND t.name = '" +tabla.ToString()+@"' 
+                            AND t.name = '"+ tabla + @"'
                         GROUP BY
                             kc.name, t.name;";
 
@@ -302,15 +297,15 @@ namespace ToolMigration.Logic.Transformation
                             }
                         }
                     }
+                    connection.Close();
                 }
                 catch (Exception ex)
                 {
+                    connection.Close();
                     Debug.WriteLine($"Error opening connection or executing command: {ex.Message}");
                     // Consider logging the error or throwing a more specific exception
                 }
             }
-
-
 
             return list;
 
@@ -343,6 +338,12 @@ namespace ToolMigration.Logic.Transformation
                         if (item.DATA_LENGTH.Replace(" ", "") is not null)
                         {
                             if (item.DATA_LENGTH.Contains("MAX") && item.DATA_TYPE.ToUpper() == "VARCHAR")
+                            {
+                                v_script = v_script + " CLOB ";
+                                break;
+
+                            }
+                            else if (item.DATA_TYPE.ToUpper() == "VARCHAR" && item.DATA_LENGTH.Contains("8000"))
                             {
                                 v_script = v_script + " CLOB ";
                                 break;
@@ -497,7 +498,7 @@ namespace ToolMigration.Logic.Transformation
                                     v_script = v_script + " NCLOB ";
                                     break;
                                 }
-                                else if (item.DATA_TYPE.Contains("VARCHAR"))
+                                else if (item.DATA_TYPE.ToUpper().Contains("VARCHAR"))
                                 {
                                     if (Convert.ToInt32(item.DATA_LENGTH.ToString()) > 4000)
                                     {

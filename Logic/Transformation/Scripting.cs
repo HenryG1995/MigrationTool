@@ -50,9 +50,11 @@ namespace ToolMigration.Logic.Transformation
                             }
                         }
                     }
+                    connection.Close();
                 }
                 catch (Exception ex)
                 {
+                    connection.Close();
                     Debug.WriteLine($"error al abrir comando y conexion : {ex.Message}");
               
                 }

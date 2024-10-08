@@ -3,15 +3,16 @@ using Microsoft.Data.SqlClient;
 using Oracle.ManagedDataAccess.Client;
 using System.Data;
 using System.Diagnostics;
+using System.IO;
 using ToolMigration.Logic.DataModels;
 using ToolMigration.Logic.Transformation;
 
 namespace ToolMigration.Logic.Connections
 {
 
-    public class Conn 
+    public class Conn
     {
-       
+
         ConnString conections = new ConnString();
 
         public string SqlConection { get; set; }
@@ -28,10 +29,10 @@ namespace ToolMigration.Logic.Connections
             // var STR = Environment.GetEnvironmentVariable("STR");
 
             // connectionString = string.Format("USER ID={0};PASSWORD={1};DATA SOURCE= (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = {2})(PORT = {3}))(CONNECT_DATA = (SERVICE_NAME ={4}))) ;", UserID, Pass, Host, Port, ServiceName);
-            connectionString = string.Format("USER ID={0};PASSWORD={1};DATA SOURCE= (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = {2})(PORT = {3}))(CONNECT_DATA = (SID = {4}))) ;", UserID, Pass, Host, Port, SID);
+            connectionString = string.Format("USER ID={0};PASSWORD={1};DATA SOURCE= (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = {2})(PORT = {3}))(CONNECT_DATA = (SID = {4}))) ;Min Pool Size=0;Max Pool Size=100;Incr Pool Size=15;Connection Timeout=0;", UserID, Pass, Host, Port, SID);
 
             // connectionString = "Data Source=tu_servidor:1521/tu_sid;User Id=tu_usuario;Password=tu_contrasena;";
-          
+
 
             conections.ORAString = connectionString;
 
@@ -55,6 +56,7 @@ namespace ToolMigration.Logic.Connections
                     }
 
                     reader.Close();
+                    connection.Close();
                     return true;
                 }
                 catch (Exception ex)
@@ -97,10 +99,12 @@ namespace ToolMigration.Logic.Connections
                     }
 
                     reader.Close();
+                    connection.Close();
                     return true;
                 }
                 catch (Exception ex)
                 {
+                    connection.Close();
                     Debug.WriteLine("Error: " + ex.Message);
                     return false;
                 }
@@ -108,13 +112,14 @@ namespace ToolMigration.Logic.Connections
 
         }
 
-        public List<DataTypeOrigenXTable> ListaColumnas(string connectionString,string table_name)
+        public List<DataTypeOrigenXTable> ListaColumnas(string connectionString, string table_name)
         {
             List<DataTypeOrigenXTable> lista = new List<DataTypeOrigenXTable>();
-            
+
             MetaDataCore metaDataCore = new MetaDataCore();
 
             var sql_command = metaDataCore.ALL_TYPE_COLUMNS_SQLMODEL_X_TABLE(table_name);
+
 
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -150,17 +155,22 @@ namespace ToolMigration.Logic.Connections
 
                                 };
                                 lista.Add(tab);
+
                             }
                             catch (Exception ex)
                             {
+                                connection.Close();
                                 Debug.WriteLine($"Error parsing data in row: {ex.Message}");
                                 // Consider logging the error or taking appropriate action
                             }
                         }
                     }
+
+                    connection.Close();
                 }
                 catch (Exception ex)
                 {
+                    connection.Close();
                     Debug.WriteLine($"Error opening connection or executing command: {ex.Message}");
                     // Consider logging the error or throwing a more specific exception
                 }
@@ -195,15 +205,16 @@ namespace ToolMigration.Logic.Connections
             return list;
         }
 
-        public List<Dictionary<string, object>> ExecuteQuery(string query,string connectionString)
+        public List<Dictionary<string, object>> ExecuteQuery(string query, string connectionString)
         {
             var result = new List<Dictionary<string, object>>();
 
-            try
+            // Crear la conexión a la base de datos
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                // Crear la conexión a la base de datos
-                using (SqlConnection connection = new SqlConnection(connectionString))
+                try
                 {
+
                     // Abrir la conexión
                     connection.Open();
 
@@ -231,11 +242,14 @@ namespace ToolMigration.Logic.Connections
                             }
                         }
                     }
+                    connection.Close();
+
                 }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("Error al ejecutar la consulta: " + ex.Message);
+                catch (Exception ex)
+                {
+                    connection.Close();
+                    Debug.WriteLine("Error al ejecutar la consulta: " + ex.Message);
+                }
             }
 
             return result.ToList();
@@ -270,14 +284,17 @@ namespace ToolMigration.Logic.Connections
                             }
                             catch (Exception ex)
                             {
+                                connection.Close();
                                 Debug.WriteLine($"Error parsing data in row: {ex.Message}");
                                 // Consider logging the error or taking appropriate action
                             }
                         }
                     }
+                    connection.Close();
                 }
                 catch (Exception ex)
                 {
+                    connection.Close();
                     Debug.WriteLine($"Error opening connection or executing command: {ex.Message}");
                     // Consider logging the error or throwing a more specific exception
                 }
@@ -304,6 +321,7 @@ namespace ToolMigration.Logic.Connections
                     dt.Load(reader);
 
                     reader.Close();
+                    connection.Dispose();
                     return dt;
                 }
                 catch (Exception ex)
@@ -337,8 +355,8 @@ namespace ToolMigration.Logic.Connections
 
                     reader.Close();
 
+                    connection.Dispose();
                     return dt;
-
                 }
                 catch (Exception ex)
                 {
@@ -380,22 +398,40 @@ namespace ToolMigration.Logic.Connections
 
                     reader.Close();
 
+                    connection.Dispose();
                     return dt;
                 }
                 catch (Exception ex)
                 {
-
+                    connection.Close();
                     return dt;
                 }
 
             }
 
-           
+
+        }
+        public async Task EscribirLogAsync(string rutaArchivo, string mensaje)
+        {
+            try
+            {
+                // Abrimos el archivo con FileShare para permitir múltiples accesos
+                using (FileStream fs = new FileStream(rutaArchivo, FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
+                using (StreamWriter sw = new StreamWriter(fs))
+                {
+                    string logMessage = $"{DateTime.Now}: {mensaje}";
+                    await sw.WriteLineAsync(logMessage); // Escribimos el mensaje de manera asíncrona
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al escribir en el archivo de log: {ex.Message}");
+            }
         }
 
-
-        public bool executeQueryOracle(string ConnectionSQlOra, string ScriptOra)
+        public bool executeQueryOracle(string ConnectionSQlOra, string ScriptOra, string path_log)
         {
+
             using (var connection = new OracleConnection(ConnectionSQlOra))
             {
                 OracleTransaction transaction = null;
@@ -404,7 +440,7 @@ namespace ToolMigration.Logic.Connections
                 try
                 {
                     // Abrimos la conexión
-                    
+
                     Debug.WriteLine("Conexión a la base de datos exitosa.");
 
                     // comando para ejecutar el script
@@ -413,8 +449,8 @@ namespace ToolMigration.Logic.Connections
                         command.Transaction = transaction;
                         // Ejecutamos el comando
                         command.ExecuteNonQuery();
-                 
-                        
+
+
                     }
                     transaction.Commit();
                     return true;
@@ -423,8 +459,36 @@ namespace ToolMigration.Logic.Connections
                 {
                     // Manejo de errores
                     Debug.WriteLine($"Error al ejecutar la consulta: {ex.Message}");
+                    if (ex.Number == 942)
+                    {
+                        Debug.WriteLine("Error porque no encontro la tabla " + ScriptOra);
+                    }
+                    else if (ex.Number == 54)
+                    {
+                        Debug.WriteLine("Error acquire with NOWAIT : " + ex.Message + ScriptOra);
+                    }
+                    else if (ex.Number == 955)
+                    {
+                        Debug.WriteLine("Error al recrear porque el objeto ya existe  : " + ScriptOra + ex.Message);
+                    }
+                    else if (ex.Number == 1408)
+                    {
+                        Debug.WriteLine("Error al recrear porque el indice porque ya existe  : " + ScriptOra + ex.Message);
+                    }
+                    else if (ex.Number == 2260)
+                    {
+                        Debug.WriteLine("Error al recrear la llave primaria porque ya existe :" + ScriptOra + ex.Message);
+                    }
+                    else if (ex.Number == 2275)
+                    {
+                        Debug.WriteLine("Error al recrear la llave foranea porque ya existe :" + ScriptOra + ex.Message);
+                    }else
+                    {
+                        Debug.WriteLine("Error desconocido :" + ScriptOra + ex.Message);
+                    }
                     transaction.Rollback();
-                    return false; 
+                    connection.Close();
+                    return false;
                 }
                 finally
                 {
@@ -433,11 +497,174 @@ namespace ToolMigration.Logic.Connections
                     {
                         connection.Close();
                         Debug.WriteLine("Conexión cerrada.");
+                        EscribirLogAsync(path_log, "Conexion Cerrada").Wait();
                     }
 
                 }
             }
         }
+
+        //public async Task<bool> executeQueryOracle(string ConnectionSQlOra, string ScriptOra, string path_log)
+        //{
+        //    using (var connection = new OracleConnection(ConnectionSQlOra))
+        //    {
+        //        OracleTransaction transaction = null;
+
+        //        await connection.OpenAsync();  // Abrir la conexión de manera asíncrona
+        //        transaction = connection.BeginTransaction();
+        //        try
+        //        {
+        //            // Abrimos la conexión
+        //            Debug.WriteLine("Conexión a la base de datos exitosa.");
+
+        //            // Comando para ejecutar el script
+        //            using (var command = new OracleCommand(ScriptOra, connection))
+        //            {
+        //                command.Transaction = transaction;
+
+        //                // Ejecutamos el comando de manera asíncrona
+        //                await command.ExecuteNonQueryAsync();
+        //            }
+
+        //            // Commit de la transacción
+        //            await transaction.CommitAsync();
+        //            return true;
+        //        }
+        //        catch (OracleException ex)
+        //        {
+        //            // Manejo de errores
+        //            Debug.WriteLine($"Error al ejecutar la consulta: {ex.Message}");
+        //            if (ex.Number == 942)
+        //            {
+        //                Debug.WriteLine("Error porque no encontró la tabla " + ScriptOra);
+        //            }
+        //            else if (ex.Number == 54)
+        //            {
+        //                Debug.WriteLine("Error acquire with NOWAIT: " + ex.Message + " " + ScriptOra);
+        //            }
+        //            else if  (ex.Number == 955)
+        //            {
+        //                Debug.WriteLine("Objeto ya existente : " + ScriptOra + " " + ex.Message);
+        //            }
+        //            else if (ex.Number == 2260)
+        //            {
+        //                Debug.WriteLine("porque la llave primaria ya existe : " + ScriptOra + " " + ex.Message);
+        //            }else
+        //            {
+        //                Debug.WriteLine("Error desconocido : " + ScriptOra + " " + ex.Message);
+        //            }
+
+        //            // Rollback de la transacción
+        //            await transaction.RollbackAsync();
+        //            return false;
+        //        }
+        //        finally
+        //        {
+        //            // Cerramos la conexión
+        //            if (connection.State == System.Data.ConnectionState.Open)
+        //            {
+        //                await connection.CloseAsync();  // Cerrar la conexión de manera asíncrona
+        //                Debug.WriteLine("Conexión cerrada.");
+
+        //                // Escribir el log de manera asíncrona
+        //                await EscribirLogAsync(path_log, "Conexión Cerrada");
+        //            }
+        //        }
+        //    }
+        //}
+
+        public string EnsureConnectionTimeout(string connectionString, int timeoutInSeconds)
+        {
+            // Verificar si la cadena ya contiene "Connection Timeout"
+            if (!connectionString.ToLower().Contains("connection timeout"))
+            {
+                // Agregar el parámetro "Connection Timeout" con el valor especificado
+                connectionString = $"{connectionString};Connection Timeout={timeoutInSeconds}";
+                Debug.WriteLine($"Connection Timeout agregado: {timeoutInSeconds} segundos");
+            }
+            else
+            {
+                Debug.WriteLine("Connection Timeout ya presente en la cadena de conexión.");
+            }
+
+            return connectionString;
+        }
+
+        //public async Task<bool> executeQueryOracle(string ConnectionSQlOra, string ScriptOra, string path_log)
+        //{
+        //    // Verificar y agregar "Connection Timeout" si es necesario
+        //    ConnectionSQlOra = EnsureConnectionTimeout(ConnectionSQlOra, 60);  // 60 segundos o el valor que prefieras
+
+        //    using (var connection = new OracleConnection(ConnectionSQlOra))
+        //    {
+        //        OracleTransaction transaction = null;
+        //        Debug.WriteLine($"Cadena de conexión utilizada: {ConnectionSQlOra}");
+
+        //        connection.Open();  // Abrir la conexión de manera asíncrona
+
+        //        transaction = connection.BeginTransaction();
+        //        try
+        //        {
+        //            // Abrimos la conexión
+        //            Debug.WriteLine("Conexión a la base de datos exitosa.");
+
+        //            // Comando para ejecutar el script
+        //            using (var command = new OracleCommand(ScriptOra, connection))
+        //            {
+        //                command.Transaction = transaction;
+        //                command.CommandTimeout = 0; // Sin límite de tiempo para la ejecución del comando
+
+        //                // Ejecutamos el comando de manera asíncrona
+        //                await command.ExecuteNonQueryAsync();
+        //            }
+
+        //            // Commit de la transacción
+        //            await transaction.CommitAsync();
+        //            return true;
+        //        }
+        //        catch (OracleException ex)
+        //        {
+        //            // Manejo de errores
+        //            Debug.WriteLine($"Error al ejecutar la consulta: {ex.Message}");
+        //            if (ex.Number == 942)
+        //            {
+        //                Debug.WriteLine("Error porque no encontró la tabla " + ScriptOra);
+        //            }
+        //            else if (ex.Number == 54)
+        //            {
+        //                Debug.WriteLine("Error acquire with NOWAIT: " + ex.Message + " " + ScriptOra);
+        //            }
+        //            else if (ex.Number == 955)
+        //            {
+        //                Debug.WriteLine("Objeto ya existente : " + ScriptOra + " " + ex.Message);
+        //            }
+        //            else if (ex.Number == 2260)
+        //            {
+        //                Debug.WriteLine("porque la llave primaria ya existe : " + ScriptOra + " " + ex.Message);
+        //            }
+        //            else
+        //            {
+        //                Debug.WriteLine("Error desconocido : " + ScriptOra + " " + ex.Message);
+        //            }
+
+        //            // Rollback de la transacción
+        //            await transaction.RollbackAsync();
+        //            return false;
+        //        }
+        //        finally
+        //        {
+        //            // Cerramos la conexión
+        //            if (connection.State == System.Data.ConnectionState.Open)
+        //            {
+        //                await connection.CloseAsync();  // Cerrar la conexión de manera asíncrona
+        //                Debug.WriteLine("Conexión cerrada.");
+
+        //                // Escribir el log de manera asíncrona
+        //                await EscribirLogAsync(path_log, "Conexión Cerrada");
+        //            }
+        //        }
+        //    }
+        //}
 
 
         public DataTable DataOrigen(string sqlConn, string Tabla)
@@ -466,11 +693,13 @@ namespace ToolMigration.Logic.Connections
 
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
-                       dt.Load(reader);
+                        dt.Load(reader);
                     }
+                    connection.Close();
                 }
                 catch (Exception ex)
                 {
+                    connection.Close();
                     Debug.WriteLine($"Error opening connection or executing command: {ex.Message}");
                     // Consider logging the error or throwing a more specific exception
                 }
@@ -480,20 +709,34 @@ namespace ToolMigration.Logic.Connections
             }
 
 
-               
+
         }
 
-        public bool BorrarTablas(string tabla,string OraConn)
+
+        //public bool BorrarTablas(string tabla, string OraConn, string path_log)
+        //{
+        //    var script = "drop table " + tabla + " cascade constraints purge";
+
+        //    var ret = executeQueryOracle(OraConn, script, path_log);
+
+        //    return ret;
+
+        //}
+        public async Task<bool> BorrarTablas(string tabla, string OraConn, string path_log)
         {
-            var script = "drop table "+tabla+" cascade constraints purge";
-            
-           var ret  = executeQueryOracle(OraConn, script);
+            // Generar el script de borrado de la tabla
+            var script = "drop table " + tabla + " cascade constraints purge";
+
+            // Simular un retraso de 50 ms
+            await Task.Delay(50);
+            // Ejecutar el script en la base de datos Oracle
+            var ret = executeQueryOracle(OraConn, script, path_log);
+            await Task.Delay(50);
 
             return ret;
-
         }
 
-        public bool Destino(DataTable dataOrigen, string tabla, string connectionOra,List<DataTypeConvert> _listaDeConversiones)
+        public bool Destino(DataTable dataOrigen, string tabla, string connectionOra, List<DataTypeConvert> _listaDeConversiones)
         {
             try
             {
@@ -524,15 +767,16 @@ namespace ToolMigration.Logic.Connections
                             bulkCopy.WriteToServer(dataOrigen);
                             transaction.Commit();
                         }
+                        connection.Dispose();
 
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         transaction.Rollback();
                         connection.Dispose();
                         return false;
                     }
-                  
+
                 }
 
                 return true; // Si todo sale bien, retornamos true
@@ -545,7 +789,7 @@ namespace ToolMigration.Logic.Connections
             }
         }
 
-        private void PreprocessDataTable(DataTable dataOrigen,List<DataTypeConvert> _listaDeConversiones)
+        private void PreprocessDataTable(DataTable dataOrigen, List<DataTypeConvert> _listaDeConversiones)
         {
             // Iteramos a través de todas las columnas del DataTable
             foreach (DataColumn column in dataOrigen.Columns)
@@ -626,6 +870,6 @@ namespace ToolMigration.Logic.Connections
             // Convierte el dato a CLOB si es necesario
             return data; // Lógica personalizada para convertir a CLOB
         }
-        
+
     }
 }
