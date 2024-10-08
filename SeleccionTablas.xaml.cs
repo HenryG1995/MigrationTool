@@ -1,4 +1,6 @@
-﻿using System.Data;
+﻿using Oracle.ManagedDataAccess.Client;
+using System;
+using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -9,6 +11,7 @@ using ToolMigration.Logic.DataModels;
 using ToolMigration.Logic.Tools;
 using ToolMigration.Logic.Transformation;
 using static ToolMigration.Logic.DataMove.Equivalency;
+using Application = System.Windows.Application;
 using Window = System.Windows.Window;
 
 
@@ -575,62 +578,67 @@ namespace ToolMigration
         }
 
 
-
-        private async Task proceso_crea_scripts(string sql, List<TablasDestino> tablasDestinoList, string ruta, bool CreaTablas = false, bool perso = false, bool ejecuta = false, string path_log = "C://")
+        #region funciona_pero_con_problemas_en_cincronizacion
+        private async Task proceso_crea_scripts(string sql, List<TablasDestino> tablasDestinoList, string ruta, bool CreaTablas = false, bool perso = false, bool ejecuta = false, string path_log = "C://", bool migra = true)
         {
-            progressBar.Value = 0;
-            progressText.Text = "Progreso: 0%";
-
+            if (migra == false)
+            {
+                progressBar.Value = 0;
+                progressText.Text = "Progreso: 0%";
+            }
             var total = tablasDestinoList.Count;
-            var i = 0;
             double progresot = 0;
+            var lockObject = new object();  // Necesario para controlar acceso a recursos compartidos
+            var progress = new Progress<double>(value =>
+            {
+                if (migra == false)
+                {
+                    progressBar.Value = value;
+                    progressText.Text = $"Progreso: {value:F2}%";
+                }
+            });
 
             try
             {
-
-                try
+                List<DataTypeConvert> dataTypeConverts = new List<DataTypeConvert>();
+                foreach (var item in dt_tabla_conversiones.Items)
                 {
-                    using (StreamWriter sw = new StreamWriter(ruta))
+                    if (item is DataTypeConvert tabs)
                     {
-                        List<DataTypeConvert> dataTypeConverts = new List<DataTypeConvert>();
-
-
-
-                        foreach (var item in dt_tabla_conversiones.Items)
+                        dataTypeConverts.Add(new DataTypeConvert
                         {
-                            if (item is DataTypeConvert tabs)
-                            {
-                                DataTypeConvert dto = new DataTypeConvert();
+                            NO = tabs.NO,
+                            Tipo = tabs.Tipo,
+                            Propiedad = tabs.Propiedad,
+                            Equivalencia = tabs.Equivalencia,
+                            EqPropiedad = tabs.EqPropiedad,
+                            PersoType = tabs.PersoType,
+                            PropPersoType = tabs.PropPersoType,
+                            Observacion = tabs.Observacion
+                        });
+                    }
+                }
 
-                                dto.NO = tabs.NO;
-                                dto.Tipo = tabs.Tipo;
-                                dto.Propiedad = tabs.Propiedad;
-                                dto.Equivalencia = tabs.Equivalencia;
-                                dto.EqPropiedad = tabs.EqPropiedad;
-                                dto.PersoType = tabs.PersoType;
-                                dto.PropPersoType = tabs.PropPersoType;
-                                dto.Observacion = tabs.Observacion;
-                                dataTypeConverts.Add(dto);
+                using (StreamWriter sw = new StreamWriter(ruta))
+                {
+                    sw.WriteLine("/*+=======+INICIA la creacion de scripts para creacion de tablas +=======+*/");
+
+                    await Task.Run(() =>
+                    {
+                        Parallel.ForEach(tablasDestinoList.Select((value, index) => (value, index)), async (itemIndex) =>
+                        {
+                            var (item, index) = itemIndex;
+                            string script_txt = string.Empty;
+                            GenScriptDestino genScriptDestino = new GenScriptDestino();
+
+                            lock (lockObject)
+                            {
+                                sw.WriteLine("/*Inicia creacion de tabla :" + item.TABLE_NAME + "*/");
 
                             }
 
-                        }
-
-                        sw.WriteLine("/*+=======+INICIA la creacion de scripts para creacion de tablas +=======+*/");
-
-                        foreach (var (item, index) in tablasDestinoList.Select((value, index) => (value, index)))
-
-                        //  foreach (var item in tablasDestinoList)
-                        {
-                            var script_txt = string.Empty;
-
-                            GenScriptDestino genScriptDestino = new GenScriptDestino();
-                            sw.WriteLine("/*Inicia creacion de tabla :" + item.TABLE_NAME + "*/");
-
-                            if (perso == true)
+                            if (perso)
                             {
-                                Tools tools = new Tools();
-
                                 script_txt = genScriptDestino.GenScriptTablesPerso(item.TABLE_NAME, dataTypeConverts, sql);
                             }
                             else
@@ -638,200 +646,686 @@ namespace ToolMigration
                                 script_txt = genScriptDestino.GenScriptTablesDefault(item.TABLE_NAME, dataTypeConverts, sql);
                             }
 
-                            if (ejecuta == true)
+                            if (ejecuta)
                             {
                                 Conn con = new Conn();
-
-                                var res =  con.executeQueryOracle(oracon_data, script_txt, path_log);
+                                var res = con.executeQueryOracle(oracon_data, script_txt, path_log);
                             }
 
-                            sw.WriteLine(script_txt.ToString());
-
-                            lstBoxScripting.Items.Add(script_txt);
 
 
+                            // Actualizar UI (lstBoxScripting) desde el hilo principal
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                try
+                                {
+                                    sw.WriteLine(script_txt.ToString());
+
+                                }
+                                catch (ArgumentOutOfRangeException ex)
+                                {
+                                    Debug.WriteLine($"Error al escribir en el archivo: {ex.Message}");
+                                }
+                                catch (IOException ioEx)
+                                {
+                                    Debug.WriteLine($"Error de E/S al escribir en el archivo: {ioEx.Message}");
+                                }
+
+                                if (migra == false)
+                                {
+                                    lstBoxScripting.Items.Add(script_txt);
+                                }
+                            });
 
                             var script_txt2 = genScriptDestino.GenScriptPrimaryKey(item.TABLE_NAME);
-
                             List<scriptList> script_primarykey = genScriptDestino.GenScriptText(script_txt2, sql);
 
-                            foreach (var scriptva in script_primarykey)
+                            // Actualizar UI desde el hilo principal
+                            Application.Current.Dispatcher.Invoke(() =>
                             {
-                                sw.WriteLine(scriptva.script.ToString());
-                                lstBoxScripting.Items.Add(scriptva.script.ToString());
-                            }
+                                foreach (var scriptva in script_primarykey)
+                                {
+                                    try
+                                    {
+                                        sw.WriteLine(scriptva.ToString());
+
+                                    }
+                                    catch (ArgumentOutOfRangeException ex)
+                                    {
+                                        Debug.WriteLine($"Error al escribir en el archivo: {ex.Message}");
+                                    }
+                                    catch (IOException ioEx)
+                                    {
+                                        Debug.WriteLine($"Error de E/S al escribir en el archivo: {ioEx.Message}");
+                                    }
+
+
+                                    if (migra == false)
+                                    {
+
+                                        lstBoxScripting.Items.Add(scriptva.script.ToString());
+                                    }
+                                }
+                            });
+
 
                             var script_txt3 = genScriptDestino.GenScriptIndexes(item.TABLE_NAME);
                             List<scriptList> scriptsIndex = genScriptDestino.GenScriptText(script_txt3, sql);
 
-                            foreach (var scriptva in scriptsIndex)
+
+                            // Actualizar UI desde el hilo principal
+                            Application.Current.Dispatcher.Invoke(() =>
                             {
-                                sw.WriteLine(scriptva.script.ToString() + ";");
-                                lstBoxScripting.Items.Add(scriptva.script.ToString());
-                            }
-
-                            var progreso = new Progress<int>(valor =>
-                            {
-                                // Aquí actualizamos la barra de progreso y el texto en la UI
-                                i++;
-
-                                double percentage = ((double)(index + 1) / total * 100) / 3;
-                                Debug.WriteLine($"Número: {item.TABLE_NAME}, Progreso: {percentage:F2}%");
-
-                                progressBar.Value = percentage;
-                                progressText.Text = "Progreso: " + Math.Round(percentage, 2) + "%";
+                                foreach (var scriptva in scriptsIndex)
+                                {
+                                    sw.WriteLine(scriptva.script.ToString() + ";");
+                                    Task.Delay(5);
+                                    if (migra == false)
+                                    {
+                                        lstBoxScripting.Items.Add(scriptva.script.ToString());
+                                    }
+                                }
                             });
 
-                            await Task.Run(() => ActualizarBarraProgreso(progreso));
 
+                            if (migra == false)
+                            {
+                                var percentage = (index + 1.0) / total * 100 / 3;
+                                await Task.Run(() => ((IProgress<double>)progress).Report(percentage));
+                            }
+                        });
+                    });
 
-                        }
+                    sw.WriteLine("/*+=======+INICIA la creacion de scripts para insercion de datos+=======+*/");
 
-
-                        sw.WriteLine("/*+=======+INICIA la creacion de scripts para insercion de datos+=======+*/");
-                        sw.WriteLine(" ");
-                        sw.WriteLine(" ");
-                        sw.WriteLine(" ");
-                        sw.WriteLine(" ");
-                        sw.WriteLine(" ");
-                        sw.WriteLine(" ");
-                        sw.WriteLine(" ");
-                        sw.WriteLine(" ");
-                        sw.WriteLine(" ");
-
-
-                        i = 0;
-                        foreach (var (item, index) in tablasDestinoList.Select((value, index) => (value, index)))
+                    // Segunda fase (inserción de datos) usando Parallel.ForEach
+                    await Task.Run(() =>
+                    {
+                        Parallel.ForEach(tablasDestinoList.Select((value, index) => (value, index)), async (itemIndex) =>
                         {
-                            var script_txt = "";
-
-                            sw.WriteLine("Inicia tabla :" + item.TABLE_NAME);
-
+                            var (item, index) = itemIndex;
+                            string script_txt = "";
                             GenScriptDestino genScriptDestino = new GenScriptDestino();
+
+                            lock (lockObject)
+                            {
+                                sw.WriteLine("Inicia tabla :" + item.TABLE_NAME);
+                            }
 
                             script_txt = genScriptDestino.GENSCRIPT(item.TABLE_NAME);
-
-                            List<string> lista_scripts = new List<string>();
-
                             Scripting scripting = new Scripting();
+                            List<string> lista_scripts = scripting.scriptListRead(sql, script_txt);
 
-                            lista_scripts = scripting.scriptListRead(sql, script_txt);
-
-                            foreach (string script in lista_scripts)
-                            {
-                                List<scriptList> scriptingList = new List<scriptList>();
-
-                                scriptingList = genScriptDestino.GenScriptText(script.ToString(), sql);
-
-                                foreach (var itemScript in scriptingList)
+                            
+                                // Actualizar UI desde el hilo principal
+                                Application.Current.Dispatcher.Invoke(() =>
                                 {
-                                    sw.WriteLine(itemScript.script.ToString() + ";");
+                                    foreach (string script in lista_scripts)
+                                    {
+                                        List<scriptList> scriptingList = genScriptDestino.GenScriptText(script.ToString(), sql);
 
-                                }
+                                        foreach (var itemScript in scriptingList)
+                                        {
+                                            lock (lockObject)
+                                            {
+                                                sw.WriteLine(itemScript.script.ToString().Replace("''","NULL") + ";");
+                                            }
+                                            
+                                          
+                                        }
+                                    }
+                                });
+                           
 
+                            lock (lockObject)
+                            {
+                                sw.WriteLine("Finaliza tabla :" + item.TABLE_NAME);
                             }
 
-                            sw.WriteLine("Finaliza tabla :" + item.TABLE_NAME);
-
-
-                            var progreso = new Progress<int>(valor =>
+                            if (migra == false)
                             {
-                                // Aquí actualizamos la barra de progreso y el texto en la UI
-                                i++;
+                                var percentage = ((index + 1.0) / total * 100 / 3) + 33.33;
+                                await Task.Run(() => ((IProgress<double>)progress).Report(percentage));
+                            }
+                        });
+                    });
 
-                                double percentage = ((double)(index + 1) / total * 100) / 3;
-                                percentage = Math.Round(percentage, 2) + 33.33;
-                                Debug.WriteLine($"Número: {item.TABLE_NAME}, Progreso: {percentage:F2}%");
-
-                                progressBar.Value = percentage;
-                                progressText.Text = "Progreso: " + Math.Round(percentage, 2) + "%";
-                            });
-
-                            await Task.Run(() => ActualizarBarraProgreso(progreso));
-
-
-
-                        }
-                        sw.WriteLine("/*+=======+INICIA la creacion de scripts para LLAVES FORANEAS de datos+=======+*/");
-                        sw.WriteLine(" ");
-                        sw.WriteLine(" ");
-                        sw.WriteLine(" ");
-                        sw.WriteLine(" ");
-                        sw.WriteLine(" ");
-                        sw.WriteLine(" ");
-                        sw.WriteLine(" ");
-                        sw.WriteLine(" ");
-                        sw.WriteLine(" ");
-
-                        i = 0;
-                        foreach (var (item, index) in tablasDestinoList.Select((value, index) => (value, index)))
+                    // Tercera fase (llaves foráneas) usando Parallel.ForEach
+                    await Task.Run(() =>
+                    {
+                        Parallel.ForEach(tablasDestinoList.Select((value, index) => (value, index)), async (itemIndex) =>
                         {
-
-                            List<scriptList> script_foreing = new List<scriptList>();
-
+                            var (item, index) = itemIndex;
                             GenScriptDestino genScriptDestino = new GenScriptDestino();
-
-
                             string script = genScriptDestino.GenScriptConstraintForeing(item.TABLE_NAME);
+                            List<scriptList> script_foreing = genScriptDestino.GenScriptText(script, sql);
 
-                            script_foreing = genScriptDestino.GenScriptText(script, sql);
-
-
-                            foreach (var scriptva in script_foreing)
+                            // Actualizar UI desde el hilo principal
+                            Application.Current.Dispatcher.Invoke(() =>
                             {
-                                sw.WriteLine(scriptva.script.ToString());
-                                lstBoxScripting.Items.Add(scriptva.script.ToString());
-                            }
+                                foreach (var scriptva in script_foreing)
+                                {
+                                    sw.WriteLine(scriptva.script.ToString());
+                                    if (migra == false)
+                                    {
 
-                            var progreso = new Progress<int>(valor =>
-                            {
-                                // Aquí actualizamos la barra de progreso y el texto en la UI
-                                i++;
-
-                                double percentage = ((double)(index + 1) / total * 100) / 3;
-                                percentage = Math.Round(percentage, 2) + 66.66;
-                                Debug.WriteLine($"Número: {item.TABLE_NAME}, Progreso: {percentage:F2}%");
-
-                                progressBar.Value = percentage;
-                                progressText.Text = "Progreso: " + Math.Round(percentage, 2) + "%";
+                                        lstBoxScripting.Items.Add(scriptva.script.ToString());
+                                    }
+                                }
                             });
 
-                            await Task.Run(() => ActualizarBarraProgreso(progreso));
 
-                        }
+                            if (migra == false)
+                            {
+                                var percentage = ((index + 1.0) / total * 100 / 3) + 66.66;
+                                await Task.Run(() => ((IProgress<double>)progress).Report(percentage));
+                            }
+                        });
+                    });
 
-
+                    if (migra == false)
+                    {
                         progressBar.Value = 100;
                         progressText.Text = "Progreso: 100%";
-
                     }
-                    System.Windows.MessageBox.Show("Revise su archivo en : " + ruta.ToString(), "Confirmación", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                    Debug.WriteLine("Archivo creado exitosamente.");
                 }
-                catch (Exception ex)
-                {
-
-                    System.Windows.MessageBox.Show(ex.Message);
-                    Debug.WriteLine("Error al crear el archivo: " + ex.Message);
-                    System.Windows.MessageBox.Show("Error al crear su archivo en : " + ex.Message, "Confirmación", MessageBoxButton.OK, MessageBoxImage.Error);
-
-
-                }
-
-
-
-
-
-
+                System.Windows.MessageBox.Show("Revise su archivo en : " + ruta.ToString(), "Confirmación", MessageBoxButton.OK, MessageBoxImage.Information);
+                Debug.WriteLine("Archivo creado exitosamente.");
             }
             catch (Exception ex)
             {
-
+                System.Windows.MessageBox.Show(ex.Message);
+                Debug.WriteLine("Error al crear el archivo: " + ex.Message);
             }
-
-
         }
+        #endregion
+
+
+        #region pruebas
+        //private async Task proceso_crea_scripts(string sql, List<TablasDestino> tablasDestinoList, string ruta, bool CreaTablas = false, bool perso = false, bool ejecuta = false, string path_log = "C://", bool migra = true)
+        //{
+        //    if (migra == false)
+        //    {
+        //        progressBar.Value = 0;
+        //        progressText.Text = "Progreso: 0%";
+        //    }
+        //    var total = tablasDestinoList.Count;
+        //    double progresot = 0;
+        //    var lockObject = new object();  // Necesario para controlar acceso a recursos compartidos
+        //    var progress = new Progress<double>(value =>
+        //    {
+        //        progressBar.Value = value;
+        //        progressText.Text = $"Progreso: {value:F2}%";
+        //    });
+
+        //    try
+        //    {
+        //        List<DataTypeConvert> dataTypeConverts = new List<DataTypeConvert>();
+        //        foreach (var item in dt_tabla_conversiones.Items)
+        //        {
+        //            if (item is DataTypeConvert tabs)
+        //            {
+        //                dataTypeConverts.Add(new DataTypeConvert
+        //                {
+        //                    NO = tabs.NO,
+        //                    Tipo = tabs.Tipo,
+        //                    Propiedad = tabs.Propiedad,
+        //                    Equivalencia = tabs.Equivalencia,
+        //                    EqPropiedad = tabs.EqPropiedad,
+        //                    PersoType = tabs.PersoType,
+        //                    PropPersoType = tabs.PropPersoType,
+        //                    Observacion = tabs.Observacion
+        //                });
+        //            }
+        //        }
+
+        //        using (StreamWriter sw = new StreamWriter(ruta))
+        //        {
+        //            sw.WriteLine("/*+=======+INICIA la creacion de scripts para creacion de tablas +=======+*/");
+
+        //            await Task.Run(() =>
+        //            {
+        //                Parallel.ForEach(tablasDestinoList.Select((value, index) => (value, index)), async (itemIndex) =>
+        //                {
+        //                    var (item, index) = itemIndex;
+        //                    string script_txt = string.Empty;
+        //                    GenScriptDestino genScriptDestino = new GenScriptDestino();
+
+        //                    lock (lockObject)
+        //                    {
+        //                        sw.WriteLine("/*Inicia creacion de tabla :" + item.TABLE_NAME + "*/");
+        //                    }
+
+        //                    if (perso)
+        //                    {
+        //                        script_txt = genScriptDestino.GenScriptTablesPerso(item.TABLE_NAME, dataTypeConverts, sql);
+        //                    }
+        //                    else
+        //                    {
+        //                        script_txt = genScriptDestino.GenScriptTablesDefault(item.TABLE_NAME, dataTypeConverts, sql);
+        //                    }
+
+        //                    if (ejecuta)
+        //                    {
+        //                        Conn con = new Conn();
+        //                        var res = con.executeQueryOracle(oracon_data, script_txt, path_log);
+        //                    }
+        //                    if (migra == false)
+        //                    {// Actualizar UI (lstBoxScripting) desde el hilo principal
+        //                        Application.Current.Dispatcher.Invoke(() =>
+        //                        {
+        //                            sw.WriteLine(script_txt.ToString());
+        //                            lstBoxScripting.Items.Add(script_txt);
+        //                        });
+
+        //                    }
+
+
+
+
+        //                    var script_txt2 = genScriptDestino.GenScriptPrimaryKey(item.TABLE_NAME);
+        //                    List<scriptList> script_primarykey = genScriptDestino.GenScriptText(script_txt2, sql);
+        //                    if (migra == false)
+        //                    {
+        //                    }
+        //                    // Actualizar UI desde el hilo principal
+        //                    Application.Current.Dispatcher.Invoke(() =>
+        //                     {
+        //                         foreach (var scriptva in script_primarykey)
+        //                         {
+        //                             sw.WriteLine(scriptva.script.ToString());
+        //                             lstBoxScripting.Items.Add(scriptva.script.ToString());
+        //                         }
+        //                     });
+
+
+
+        //                    var script_txt3 = genScriptDestino.GenScriptIndexes(item.TABLE_NAME);
+        //                    List<scriptList> scriptsIndex = genScriptDestino.GenScriptText(script_txt3, sql);
+
+        //                    if (migra == false)
+        //                    {
+        //                        // Actualizar UI desde el hilo principal
+        //                        Application.Current.Dispatcher.Invoke(() =>
+        //                        {
+        //                            foreach (var scriptva in scriptsIndex)
+        //                            {
+        //                                sw.WriteLine(scriptva.script.ToString() + ";");
+        //                                lstBoxScripting.Items.Add(scriptva.script.ToString());
+        //                            }
+        //                        });
+        //                    }
+
+
+        //                    if (migra == false)
+        //                    {
+        //                        var percentage = (index + 1.0) / total * 100 / 3;
+        //                        await Task.Run(() => ((IProgress<double>)progress).Report(percentage));
+        //                    }
+        //                });
+        //            });
+
+        //            sw.WriteLine("/*+=======+INICIA la creacion de scripts para insercion de datos+=======+*/");
+
+        //            // Segunda fase (inserción de datos) usando Parallel.ForEach
+        //            await Task.Run(() =>
+        //            {
+        //                Parallel.ForEach(tablasDestinoList.Select((value, index) => (value, index)), async (itemIndex) =>
+        //                {
+        //                    var (item, index) = itemIndex;
+        //                    string script_txt = "";
+        //                    GenScriptDestino genScriptDestino = new GenScriptDestino();
+
+        //                    lock (lockObject)
+        //                    {
+        //                        sw.WriteLine("Inicia tabla :" + item.TABLE_NAME);
+        //                    }
+
+        //                    script_txt = genScriptDestino.GENSCRIPT(item.TABLE_NAME);
+        //                    Scripting scripting = new Scripting();
+        //                    List<string> lista_scripts = scripting.scriptListRead(sql, script_txt);
+
+
+        //                    // Actualizar UI desde el hilo principal
+        //                    Application.Current.Dispatcher.Invoke(() =>
+        //                    {
+        //                        foreach (string script in lista_scripts)
+        //                        {
+        //                            List<scriptList> scriptingList = genScriptDestino.GenScriptText(script.ToString(), sql);
+
+        //                            foreach (var itemScript in scriptingList)
+        //                            {
+        //                                sw.WriteLine(itemScript.script.ToString() + ";");
+        //                            }
+        //                        }
+        //                    });
+
+        //                    lock (lockObject)
+        //                    {
+        //                        sw.WriteLine("Finaliza tabla :" + item.TABLE_NAME);
+        //                    }
+
+        //                    var percentage = ((index + 1.0) / total * 100 / 3) + 33.33;
+        //                    await Task.Run(() => ((IProgress<double>)progress).Report(percentage));
+        //                });
+        //            });
+
+        //            // Tercera fase (llaves foráneas) usando Parallel.ForEach
+        //            await Task.Run(() =>
+        //            {
+        //                Parallel.ForEach(tablasDestinoList.Select((value, index) => (value, index)), async (itemIndex) =>
+        //                {
+        //                    var (item, index) = itemIndex;
+        //                    GenScriptDestino genScriptDestino = new GenScriptDestino();
+        //                    string script = genScriptDestino.GenScriptConstraintForeing(item.TABLE_NAME);
+        //                    List<scriptList> script_foreing = genScriptDestino.GenScriptText(script, sql);
+
+        //                    // Actualizar UI desde el hilo principal
+        //                    Application.Current.Dispatcher.Invoke(() =>
+        //                    {
+        //                        foreach (var scriptva in script_foreing)
+        //                        {
+        //                            sw.WriteLine(scriptva.script.ToString());
+        //                            lstBoxScripting.Items.Add(scriptva.script.ToString());
+        //                        }
+        //                    });
+
+        //                    if (migra == false)
+        //                    {
+        //                        var percentage = ((index + 1.0) / total * 100 / 3) + 66.66;
+        //                        await Task.Run(() => ((IProgress<double>)progress).Report(percentage));
+        //                    }
+        //                });
+        //            });
+
+        //            progressBar.Value = 100;
+        //            progressText.Text = "Progreso: 100%";
+        //        }
+        //        System.Windows.MessageBox.Show("Revise su archivo en : " + ruta.ToString(), "Confirmación", MessageBoxButton.OK, MessageBoxImage.Information);
+        //        Debug.WriteLine("Archivo creado exitosamente.");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        System.Windows.MessageBox.Show(ex.Message);
+        //        Debug.WriteLine("Error al crear el archivo: " + ex.Message);
+        //    }
+        //}
+        #endregion
+
+        //private async Task proceso_crea_scripts(string sql, List<TablasDestino> tablasDestinoList, string ruta, bool CreaTablas = false, bool perso = false, bool ejecuta = false, string path_log = "C://", bool migra = true)
+        //{
+        //    if (migra == false)
+        //    {
+        //        progressBar.Value = 0;
+        //        progressText.Text = "Progreso: 0%";
+        //    }
+        //    var total = tablasDestinoList.Count;
+        //    var i = 0;
+        //    double progresot = 0;
+
+        //    try
+        //    {
+
+        //        try
+        //        {
+        //            using (StreamWriter sw = new StreamWriter(ruta))
+        //            {
+        //                List<DataTypeConvert> dataTypeConverts = new List<DataTypeConvert>();
+
+
+        //                foreach (var item in dt_tabla_conversiones.Items)
+        //                {
+        //                    if (item is DataTypeConvert tabs)
+        //                    {
+        //                        DataTypeConvert dto = new DataTypeConvert();
+
+        //                        dto.NO = tabs.NO;
+        //                        dto.Tipo = tabs.Tipo;
+        //                        dto.Propiedad = tabs.Propiedad;
+        //                        dto.Equivalencia = tabs.Equivalencia;
+        //                        dto.EqPropiedad = tabs.EqPropiedad;
+        //                        dto.PersoType = tabs.PersoType;
+        //                        dto.PropPersoType = tabs.PropPersoType;
+        //                        dto.Observacion = tabs.Observacion;
+        //                        dataTypeConverts.Add(dto);
+
+        //                    }
+
+        //                }
+
+        //                sw.WriteLine("/*+=======+INICIA la creacion de scripts para creacion de tablas +=======+*/");
+
+        //                foreach (var (item, index) in tablasDestinoList.Select((value, index) => (value, index)))
+
+        //                //  foreach (var item in tablasDestinoList)
+        //                {
+        //                    var script_txt = string.Empty;
+
+        //                    GenScriptDestino genScriptDestino = new GenScriptDestino();
+        //                    sw.WriteLine("/*Inicia creacion de tabla :" + item.TABLE_NAME + "*/");
+
+        //                    if (perso == true)
+        //                    {
+        //                        Tools tools = new Tools();
+
+        //                        script_txt = genScriptDestino.GenScriptTablesPerso(item.TABLE_NAME, dataTypeConverts, sql);
+        //                    }
+        //                    else
+        //                    {
+        //                        script_txt = genScriptDestino.GenScriptTablesDefault(item.TABLE_NAME, dataTypeConverts, sql);
+        //                    }
+
+        //                    if (ejecuta == true)
+        //                    {
+        //                        Conn con = new Conn();
+
+        //                        var res = con.executeQueryOracle(oracon_data, script_txt, path_log);
+        //                    }
+
+        //                    sw.WriteLine(script_txt.ToString());
+        //                    if (migra == false)
+        //                    {
+        //                        lstBoxScripting.Items.Add(script_txt);
+        //                    }
+
+
+
+        //                    var script_txt2 = genScriptDestino.GenScriptPrimaryKey(item.TABLE_NAME);
+
+        //                    List<scriptList> script_primarykey = genScriptDestino.GenScriptText(script_txt2, sql);
+
+        //                    foreach (var scriptva in script_primarykey)
+        //                    {
+        //                        sw.WriteLine(scriptva.script.ToString());
+        //                        if (migra == false)
+        //                        {
+
+        //                            lstBoxScripting.Items.Add(scriptva.script.ToString());
+        //                        }
+        //                    }
+
+        //                    var script_txt3 = genScriptDestino.GenScriptIndexes(item.TABLE_NAME);
+        //                    List<scriptList> scriptsIndex = genScriptDestino.GenScriptText(script_txt3, sql);
+
+        //                    foreach (var scriptva in scriptsIndex)
+        //                    {
+        //                        sw.WriteLine(scriptva.script.ToString() + ";");
+        //                        if (migra == false)
+        //                        {
+
+        //                            lstBoxScripting.Items.Add(scriptva.script.ToString());
+        //                        }
+        //                    }
+        //                    if (migra == false)
+        //                    {
+        //                        var progreso = new Progress<int>(valor =>
+        //                        {
+        //                            // Aquí actualizamos la barra de progreso y el texto en la UI
+        //                            i++;
+
+        //                            double percentage = ((double)(index + 1) / total * 100) / 3;
+        //                            Debug.WriteLine($"Número: {item.TABLE_NAME}, Progreso: {percentage:F2}%");
+
+        //                            progressBar.Value = percentage;
+        //                            progressText.Text = "Progreso: " + Math.Round(percentage, 2) + "%";
+        //                        });
+
+        //                        await Task.Run(() => ActualizarBarraProgreso(progreso));
+        //                    }
+
+
+
+        //                }
+
+
+        //                sw.WriteLine("/*+=======+INICIA la creacion de scripts para insercion de datos+=======+*/");
+        //                sw.WriteLine(" ");
+        //                sw.WriteLine(" ");
+        //                sw.WriteLine(" ");
+        //                sw.WriteLine(" ");
+        //                sw.WriteLine(" ");
+        //                sw.WriteLine(" ");
+        //                sw.WriteLine(" ");
+        //                sw.WriteLine(" ");
+        //                sw.WriteLine(" ");
+
+
+        //                i = 0;
+        //                foreach (var (item, index) in tablasDestinoList.Select((value, index) => (value, index)))
+        //                {
+        //                    var script_txt = "";
+
+        //                    sw.WriteLine("Inicia tabla :" + item.TABLE_NAME);
+
+        //                    GenScriptDestino genScriptDestino = new GenScriptDestino();
+
+        //                    script_txt = genScriptDestino.GENSCRIPT(item.TABLE_NAME);
+
+        //                    List<string> lista_scripts = new List<string>();
+
+        //                    Scripting scripting = new Scripting();
+
+        //                    lista_scripts = scripting.scriptListRead(sql, script_txt);
+
+        //                    foreach (string script in lista_scripts)
+        //                    {
+        //                        List<scriptList> scriptingList = new List<scriptList>();
+
+        //                        scriptingList = genScriptDestino.GenScriptText(script.ToString(), sql);
+
+        //                        foreach (var itemScript in scriptingList)
+        //                        {
+        //                            sw.WriteLine(itemScript.script.ToString() + ";");
+
+        //                        }
+
+        //                    }
+
+        //                    sw.WriteLine("Finaliza tabla :" + item.TABLE_NAME);
+
+        //                    if (migra == false)
+        //                    {
+        //                        var progreso = new Progress<int>(valor =>
+        //                    {
+        //                        // Aquí actualizamos la barra de progreso y el texto en la UI
+        //                        i++;
+
+        //                        double percentage = ((double)(index + 1) / total * 100) / 3;
+        //                        percentage = Math.Round(percentage, 2) + 33.33;
+        //                        Debug.WriteLine($"Número: {item.TABLE_NAME}, Progreso: {percentage:F2}%");
+
+        //                        progressBar.Value = percentage;
+        //                        progressText.Text = "Progreso: " + Math.Round(percentage, 2) + "%";
+        //                    });
+
+        //                        await Task.Run(() => ActualizarBarraProgreso(progreso));
+        //                    }
+
+
+        //                }
+        //                sw.WriteLine("/*+=======+INICIA la creacion de scripts para LLAVES FORANEAS de datos+=======+*/");
+        //                sw.WriteLine(" ");
+        //                sw.WriteLine(" ");
+        //                sw.WriteLine(" ");
+        //                sw.WriteLine(" ");
+        //                sw.WriteLine(" ");
+        //                sw.WriteLine(" ");
+        //                sw.WriteLine(" ");
+        //                sw.WriteLine(" ");
+        //                sw.WriteLine(" ");
+
+        //                i = 0;
+        //                foreach (var (item, index) in tablasDestinoList.Select((value, index) => (value, index)))
+        //                {
+
+        //                    List<scriptList> script_foreing = new List<scriptList>();
+
+        //                    GenScriptDestino genScriptDestino = new GenScriptDestino();
+
+
+        //                    string script = genScriptDestino.GenScriptConstraintForeing(item.TABLE_NAME);
+
+        //                    script_foreing = genScriptDestino.GenScriptText(script, sql);
+
+
+        //                    foreach (var scriptva in script_foreing)
+        //                    {
+        //                        sw.WriteLine(scriptva.script.ToString());
+        //                        lstBoxScripting.Items.Add(scriptva.script.ToString());
+        //                    }
+
+        //                    if (migra == false)
+        //                    {
+        //                        var progreso = new Progress<int>(valor =>
+        //                    {
+        //                        // Aquí actualizamos la barra de progreso y el texto en la UI
+        //                        i++;
+
+        //                        double percentage = ((double)(index + 1) / total * 100) / 3;
+        //                        percentage = Math.Round(percentage, 2) + 66.66;
+        //                        Debug.WriteLine($"Número: {item.TABLE_NAME}, Progreso: {percentage:F2}%");
+
+        //                        progressBar.Value = percentage;
+        //                        progressText.Text = "Progreso: " + Math.Round(percentage, 2) + "%";
+        //                    });
+
+        //                        await Task.Run(() => ActualizarBarraProgreso(progreso));
+        //                    }
+
+        //                }
+
+
+        //                progressBar.Value = 100;
+        //                progressText.Text = "Progreso: 100%";
+
+        //            }
+        //            System.Windows.MessageBox.Show("Revise su archivo en : " + ruta.ToString(), "Confirmación", MessageBoxButton.OK, MessageBoxImage.Information);
+
+        //            Debug.WriteLine("Archivo creado exitosamente.");
+        //        }
+        //        catch (Exception ex)
+        //        {
+
+        //            System.Windows.MessageBox.Show(ex.Message);
+        //            Debug.WriteLine("Error al crear el archivo: " + ex.Message);
+        //            System.Windows.MessageBox.Show("Error al crear su archivo en : " + ex.Message, "Confirmación", MessageBoxButton.OK, MessageBoxImage.Error);
+
+
+        //        }
+
+
+
+
+
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Debug.WriteLine($"Error: {ex.Message}");
+        //    }
+
+
+        //}
         private void chk_cancela_destino_checked(object sender, EventArgs e)
         {
 
@@ -1013,13 +1507,16 @@ namespace ToolMigration
             }
 
 
-            Thread migrationThread = new Thread(() =>
+            Thread migrationThread = new Thread(async () =>
             {
-                MigraCion(oracon_data, sqlcon_data, tablas, dataTypeConverts, genScript, genLog, genPerso, ruta, OverRid);
+                await MigraCion(oracon_data, sqlcon_data, tablas, dataTypeConverts, genScript, genLog, genPerso, ruta, OverRid);
             });
 
             // Inicia el hilo
             migrationThread.Start();
+
+
+
 
         }
         public void ActualizarMigracionBar(IProgress<int> progreso)
@@ -1069,9 +1566,9 @@ namespace ToolMigration
             {
                 string selectedValue = selectedItem.Content.ToString();
 
-                ruta = (txt_ruta_archivo.Text.Length <= 0) ? "C:/script" : txt_ruta_archivo.Text + "/" + uniqueNumber + "." + selectedValue;
+                ruta = (txt_ruta_archivo.Text.Length <= 0) ? "C:/script" : txt_ruta_archivo.Text + "\\script" + uniqueNumber + "." + selectedValue;
 
-                path_log2 = selectedItem.Content.ToString + "/Log" + uniqueNumber + ".txt";
+                path_log2 = (txt_ruta_archivo.Text.Length <= 0) ? "/Log" + uniqueNumber + ".txt" : txt_ruta_archivo.Text + "\\Log" + uniqueNumber + ".txt" ; ;
             }
             else
             {
@@ -1084,7 +1581,7 @@ namespace ToolMigration
             bool convertManual = chk_Convert_Manual.IsChecked.Value;
             var tablas = ListTablas.ToList();
 
-            await proceso_crea_scripts(sqlcon_data, tablas, ruta, genScriptTables, convertManual, false, path_log2);
+            await proceso_crea_scripts(sqlcon_data, tablas, ruta, genScriptTables, convertManual, false, path_log2, false);
 
 
 
@@ -1118,7 +1615,7 @@ namespace ToolMigration
 
             if (maxThreads > 6)
             {
-                maxThreads = 4;
+                maxThreads = 2;
 
             }
             else if (maxThreads >= 2)
@@ -1132,33 +1629,6 @@ namespace ToolMigration
 
             var mensajeLog = "";
 
-            if (GenScript)
-            {
-
-
-                if (genPerso)
-                {
-                    Thread creaScripThread = new Thread(() =>
-                {
-                    proceso_crea_scripts(sqlcon_data, tablas, PathLogScript + "Script" + Guid.NewGuid().ToString().ToUpper().Substring(1, 10).ToString() + ".sql", true, true, false);
-                });
-
-                    // Inicia el hilo
-                    creaScripThread.Start();
-                }
-                else
-                {
-
-                    Thread creaScripThread = new Thread(() =>
-                    {
-                        proceso_crea_scripts(sqlcon_data, tablas, PathLogScript + "Script" + Guid.NewGuid().ToString().ToUpper().Substring(1, 10).ToString() + ".sql", true, false, false);
-                    });
-
-                    creaScripThread.Start();
-                }
-
-
-            }
 
             //creacion de tablas con llave primaria sin foraneas 
             if (OverrR == true)
@@ -1166,12 +1636,13 @@ namespace ToolMigration
                 // opción de paralelismo que limite el uso de hilos si es necesario.
                 ParallelOptions parallelOptions = new ParallelOptions
                 {
-                    MaxDegreeOfParallelism = Environment.ProcessorCount // Usa tantos hilos como núcleos disponibles
+                    //MaxDegreeOfParallelism = Environment.ProcessorCount // Usa tantos hilos como núcleos disponibles
+                    MaxDegreeOfParallelism = 1 // Usa tantos hilos como núcleos disponibles problema con la base de datos hay que validar
                 };
                 Conn translateData = new Conn();
                 double startPercentage = 0;  // Inicio de este bloque
                 double endPercentage = 25;   // Fin de este bloque
-
+                //translateData.cierra_sessiones(OracleConnection);
                 // Usamos Parallel.ForEach para borrar las tablas en paralelo
                 Parallel.ForEach(litaTablasDestino.Select((value, index) => (value, index)), parallelOptions, async (tborrarWithIndex) =>
                 {
@@ -1179,8 +1650,8 @@ namespace ToolMigration
 
                     // Se debe crear una nueva conexión por cada hilo
 
-                    var resul = translateData.BorrarTablas(tborrar.TABLE_NAME, OracleConnection, log_ubi);
-                    Debug.WriteLine("Tabla : " + tborrar.TABLE_NAME + " Estado de borrado de tabla : " + resul);
+                    var resul = await translateData.BorrarTablas(tborrar.TABLE_NAME, OracleConnection, log_ubi);
+                    // Debug.WriteLine("Tabla : " + tborrar.TABLE_NAME + " Estado de borrado de tabla : " + resul);
 
                     // Calculamos el progreso
                     double percentage = startPercentage + (((double)(index + 1) / total) * (endPercentage - startPercentage));
@@ -1232,13 +1703,13 @@ namespace ToolMigration
                     }
 
 
-                    var result =  translateData.executeQueryOracle(OracleConnection, script, log_ubi);
+                    var result = translateData.executeQueryOracle(OracleConnection, script, log_ubi);
                     Debug.WriteLine("Tabla : " + item.TABLE_NAME + " Estado de creacion de tabla : " + result);
-                    if (GenLog)
+                    if (GenLog == true)
                     {
                         if (result == false)
                         {
-                            mensajeLog = $"{DateTime.Now}: {item.TABLE_NAME}, Error para creacion de tabla = {script}";
+                            mensajeLog = $"{DateTime.Now}: {item.TABLE_NAME}, Error para creacion de tabla = {result}";
                             translateData.EscribirLogAsync(log_ubi, mensajeLog).Wait(); // Wait para asegurar que se complete antes de seguir
                         }
                         else
@@ -1254,7 +1725,7 @@ namespace ToolMigration
 
                     foreach (var item2 in listScriptPrimaryky)
                     {
-                        resul =  translateData.executeQueryOracle(OracleConnection, item2.script.Replace(";", ""), log_ubi);
+                        resul = translateData.executeQueryOracle(OracleConnection, item2.script.Replace(";", ""), log_ubi);
                         Debug.WriteLine("Tabla : " + item.TABLE_NAME + " Estado de creacion de llave primaria : " + resul);
                         if (GenLog)
                         {
@@ -1263,34 +1734,7 @@ namespace ToolMigration
                         }
                     }
 
-                    // Creación de índices
-                    var script_index = genScript.GenScriptIndexes(item.TABLE_NAME);
-                    var scriptindexlist = genScript.GenScriptText(script_index, SqlConnection);
 
-                    foreach (var item2 in scriptindexlist)
-                    {
-                        result =  translateData.executeQueryOracle(OracleConnection, item2.script.Replace(";", ""), log_ubi);
-                        Debug.WriteLine("Tabla : " + item.TABLE_NAME + " Estado de creacion de indices: " + result);
-                        if (GenLog)
-                        {
-                            mensajeLog = $"{DateTime.Now}: {item.TABLE_NAME}, Script de creacion de indices: = {item2.script.Replace(";", "")}";
-                            translateData.EscribirLogAsync(log_ubi, mensajeLog).Wait(); // Wait para asegurar que se complete antes de seguir
-                        }
-                    }
-
-                    // Actualización del progreso
-                    double percentage = startPercentage + (((double)(index + 1) / total) * (endPercentage - startPercentage));
-
-                    mensajeLog = $"{DateTime.Now}: {item.TABLE_NAME}, Creacion De Tabla Correcta = {result}";
-                    translateData.EscribirLogAsync(log_ubi, mensajeLog).Wait(); // Wait para asegurar que se complete antes de seguir
-
-                    // Actualizamos el progreso de manera segura en la UI usando Dispatcher
-                    await Dispatcher.InvokeAsync(() =>
-                    {
-                        // Actualizamos la barra de progreso y el texto de la UI de manera segura
-                        progressBar_Migracion.Value = percentage;
-                        ProgressTextMigracion.Text = $"Progreso: {percentage.ToString("F2")}%";
-                    });
 
                 });
 
@@ -1334,12 +1778,13 @@ namespace ToolMigration
 
                 });
 
+
                 startPercentage = 75;  // Inicio de este bloque
                 endPercentage = 100;   // Fin de este bloque
                 Parallel.ForEach(litaTablasDestino.Select((value, index) => (value, index)), parallelOptions, async (itemWithIndex) =>
                 {
                     var (item, index) = itemWithIndex;
-
+                    bool result = false;
                     // Generar el script para las llaves foráneas
                     GenScriptDestino genScriptDestino = new GenScriptDestino();
                     var script_foraneas = genScriptDestino.GenScriptConstraintForeing(item.TABLE_NAME);
@@ -1350,10 +1795,32 @@ namespace ToolMigration
                     {
                         // Crear una nueva conexión por cada hilo
 
-                        var result = translateData.executeQueryOracle(OracleConnection, item2.script.Replace(";", ""), log_ubi);
+                        result = translateData.executeQueryOracle(OracleConnection, item2.script.Replace(";", ""), log_ubi);
                         Debug.WriteLine($"Tabla: {item.TABLE_NAME}, Ejecución de llave foránea = {result}");
 
                     }
+
+
+                    // Creación de índices
+                    var script_index = genScriptDestino.GenScriptIndexes(item.TABLE_NAME);
+                    var scriptindexlist = genScriptDestino.GenScriptText(script_index, SqlConnection);
+
+                    foreach (var item2 in scriptindexlist)
+                    {
+                        result = translateData.executeQueryOracle(OracleConnection, item2.script.Replace(";", ""), log_ubi);
+                        Debug.WriteLine("Tabla : " + item.TABLE_NAME + " Estado de creacion de indices: " + result);
+                        if (GenLog)
+                        {
+                            mensajeLog = $"{DateTime.Now}: {item.TABLE_NAME}, Script de creacion de indices: = {item2.script.Replace(";", "")}";
+                            translateData.EscribirLogAsync(log_ubi, mensajeLog).Wait(); // Wait para asegurar que se complete antes de seguir
+                        }
+                    }
+
+                    // Actualización del progreso
+
+                    mensajeLog = $"{DateTime.Now}: {item.TABLE_NAME}, Creacion De índices Correcta = {result}";
+                    translateData.EscribirLogAsync(log_ubi, mensajeLog).Wait(); // Wait para asegurar que se complete antes de seguir
+
 
                     // Actualización del progreso
                     double percentage = startPercentage + (((double)(index + 1) / total) * (endPercentage - startPercentage));
@@ -1376,6 +1843,10 @@ namespace ToolMigration
                     ProgressTextMigracion.Text = $"Progreso: {percentage.ToString("F2")}%";
                 });
 
+
+
+                //translateData.cierra_sessiones(OracleConnection);
+
             }
             else
             {
@@ -1385,13 +1856,13 @@ namespace ToolMigration
                 object lockObj = new object(); // Bloqueo para actualizaciones seguras
                 Conn conn = new Conn();
                 // Usa la ruta del TextBox (txt_logPath.Text) si no está vacía, si lo está, usa una ruta predeterminada
-                rutaArchivoLog = txt_logPath.Text;
-
+               
+                //conn.cierra_sessiones(OracleConnection);
                 ParallelOptions parallelOptions = new ParallelOptions
                 {
                     MaxDegreeOfParallelism = Environment.ProcessorCount // Usar tantos hilos como núcleos disponibles
+                    //MaxDegreeOfParallelism = 6 //Environment.ProcessorCount // Usar tantos hilos como núcleos disponibles
                 };
-
 
                 // Usamos Parallel.ForEach para ejecutar en paralelo
                 await Task.Run(() =>
@@ -1440,42 +1911,40 @@ namespace ToolMigration
                             });
                         }
                     });
+
                 });
+                //conn.cierra_sessiones(OracleConnection);
 
             }
 
 
-            await Bloqueo_Interfaz(false);
 
+            if (GenScript)
+            {
+
+               
+                if (genPerso)
+                {
+                   
+                        await proceso_crea_scripts(sqlcon_data, tablas, PathLogScript + "\\Script" + Guid.NewGuid().ToString().ToUpper().Substring(1, 10).ToString() + ".sql", true, true, false, PathLogScript, true);
+                
+
+                    // Inicia el hilo
+                }
+                else
+                {
+
+                    
+                        await proceso_crea_scripts(sqlcon_data, tablas, PathLogScript + "\\Script" + Guid.NewGuid().ToString().ToUpper().Substring(1, 10).ToString() + ".sql", true, false, false, PathLogScript, true);
+                  
+                }
+
+
+            }
+            await Bloqueo_Interfaz(false);
 
         }
 
-#warning deprecate
-        //private async Task EscribirLogAsync(string rutaArchivo, string mensaje)
-        //{
-        //    try
-        //    {
-        //        // Abrimos el archivo con FileShare para permitir múltiples accesos
-        //        using (FileStream fs = new FileStream(rutaArchivo, FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
-        //        using (StreamWriter sw = new StreamWriter(fs))
-        //        {
-        //            string logMessage = $"{DateTime.Now}: {mensaje}";
-        //            await sw.WriteLineAsync(logMessage); // Escribimos el mensaje de manera asíncrona
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"Error al escribir en el archivo de log: {ex.Message}");
-        //    }
-        //}
-
-
     }
-
-
-
-
-
-
 
 }

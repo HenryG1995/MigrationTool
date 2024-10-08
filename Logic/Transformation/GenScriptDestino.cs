@@ -56,30 +56,32 @@ namespace ToolMigration.Logic.Transformation
         public string GENSCRIPT(string tabla)
         {
             var script_insert = @"
+select UPPER(dt.ainsert)+dt.SCRIPT from (
+
         SELECT 'SELECT ''' +
-       (select 'INSERT INTO ""' + T.TABLE_NAME + '"" (' + STRING_AGG('""' + T.column_name + '""', ',') + ') VALUES ('
+       (select 'INSERT INTO ""' + T.TABLE_NAME + '"" (' + STRING_AGG('""' + T.column_name + '""', ',') + ')  VALUES ('
         from INFORMATION_SCHEMA.columns T
-        where T.table_name = '"+tabla+ @"'
-        GROUP BY T.TABLE_NAME) + '' +
+        where T.table_name = '"+ tabla+@"'
+        GROUP BY T.TABLE_NAME) ainsert ,
        (SELECT STRING_AGG(
                        (CASE
                             WHEN DATA_TYPE IN
-                                ('varchar', 'nvarchar', 'char', 'nchar', 'text', 'ntext', 
+                                ('varchar', 'nvarchar', 'char', 'nchar', 'text', 'ntext',
                                  'date', 'datetime', 'datetime2', 'smalldatetime', 'time', 'timestamp',
-                                 'binary', 'varbinary', 'image', 'uniqueidentifier', 'hierarchyid', 'xml') 
-                                THEN CONCAT('''''''+ISNULL([', COLUMN_NAME, '],NULL)+''''''')
+                                 'binary', 'varbinary', 'image', 'uniqueidentifier', 'hierarchyid', 'xml')
+                                THEN CONCAT(''''''''+'+ISNULL(ISNULL([', COLUMN_NAME, '],''''),''null'')+''''''')
                             WHEN DATA_TYPE IN
-                                ('int', 'bit', 'bigint', 'smallint', 'tinyint', 'decimal', 'numeric', 'float', 'real', 
-                                 'money', 'smallmoney', 'binary', 'varbinary', 'rowversion', 'uniqueidentifier', 
+                                ('int', 'bit', 'bigint', 'smallint', 'tinyint', 'decimal', 'numeric', 'float', 'real',
+                                 'money', 'smallmoney', 'binary', 'varbinary', 'rowversion', 'uniqueidentifier',
                                  'geometry', 'geography', 'sql_variant', 'cursor', 'table')
 
-                                THEN '''+CAST([' + COLUMN_NAME + '] AS VARCHAR)+'''
-                            ELSE 'Otro tipo de dato' END)
+                                THEN ''''''''+'+isnull(isnull(CAST([' + COLUMN_NAME + '] AS VARCHAR),''''),''''''''+''null''+'''''''')+'''''''
+                            ELSE 'isnull('''',null)' END)
                    , ',')
                    AS COLUMN_NAME_WITH_QUOTES
 
         FROM INFORMATION_SCHEMA.COLUMNS T
-        where T.table_name = '" + tabla+ @"') + ')'' AS SCRIPT FROM "+tabla+@"' as ""SCRIPT""";
+        where T.table_name = '"+ tabla+@"') + ' )''AS SCRIPT FROM "+ tabla+@"' as ""SCRIPT"" ) as dt";
 
             return script_insert;
         }
@@ -332,8 +334,7 @@ namespace ToolMigration.Logic.Transformation
                 //asigna el tipo de dato y la propiedad
                 foreach (var item2 in tipos)
                 {
-                    if (item.DATA_TYPE.ToUpper() == item2.Tipo.ToUpper())
-
+                    if (item.DATA_TYPE.ToUpper().Replace(" ","") == item2.Tipo.ToUpper().Replace(" ", ""))
                     {
                         if (item.DATA_LENGTH.Replace(" ", "") is not null)
                         {
@@ -458,7 +459,7 @@ namespace ToolMigration.Logic.Transformation
                     if (item.DATA_TYPE.ToUpper() == item2.Tipo.ToUpper())
                     {
 
-                        if (item2.PersoType.Replace(" ","") is not null && item2.PersoType.Contains("ingrese valores") == false)
+                        if (item2.PersoType.Replace(" ", "") is not null && item2.PersoType.Contains("ingrese valores") == false)
                         {
                             v_script = v_script + "  " + item2.PersoType;
 
@@ -472,51 +473,74 @@ namespace ToolMigration.Logic.Transformation
                                 {
                                     v_script = v_script + " (" + item2.PropPersoType + ") ";
                                 }
-                                
+
 
                             }
                             break;
 
                         }
                         else
-                        {
-                            if (item.DATA_LENGTH.Replace(" ", "") is not null)
+                        {// default para tipos personalizados que no coinciden con los criterios.
+                            if (item.DATA_TYPE.ToUpper().Replace(" ", "") == item2.Tipo.ToUpper().Replace(" ", ""))
                             {
-                                if (item.DATA_LENGTH.Contains("MAX") && item.DATA_TYPE.ToUpper() == "VARCHAR")
+                                if (item.DATA_LENGTH.Replace(" ", "") is not null)
                                 {
-                                    v_script = v_script + " CLOB ";
-                                    break;
-
-                                }
-                                else if (item.DATA_LENGTH.Contains("MAX") && item.DATA_TYPE.ToUpper() == "VARBINARY")
-                                {
-                                    v_script = v_script + " BLOB ";
-                                    break;
-                                }
-                                else if (item.DATA_LENGTH.Contains("MAX") && item.DATA_TYPE.ToUpper() == "NVARCHAR")
-                                {
-                                    v_script = v_script + " NCLOB ";
-                                    break;
-                                }
-                                else if (item.DATA_TYPE.ToUpper().Contains("VARCHAR"))
-                                {
-                                    if (Convert.ToInt32(item.DATA_LENGTH.ToString()) > 4000)
+                                    if (item.DATA_LENGTH.ToUpper().Contains("MAX") && item.DATA_TYPE.ToUpper() == "VARCHAR")
                                     {
                                         v_script = v_script + " CLOB ";
                                         break;
+
+                                    }
+                                    else if (item.DATA_TYPE.ToUpper() == "VARCHAR" && item.DATA_LENGTH.Contains("8000"))
+                                    {
+                                        v_script = v_script + " CLOB ";
+                                        break;
+
+                                    }
+                                    else if (item.DATA_LENGTH.ToUpper().Contains("MAX") && item.DATA_TYPE.ToUpper() == "VARBINARY")
+                                    {
+                                        v_script = v_script + " BLOB ";
+                                        break;
+                                    }
+                                    else if (item.DATA_LENGTH.ToUpper().Contains("MAX") && item.DATA_TYPE.ToUpper() == "NVARCHAR")
+                                    {
+                                        v_script = v_script + " NCLOB ";
+                                        break;
+                                    }
+                                    else if (item.DATA_TYPE.ToUpper().Contains("VARCHAR"))
+                                    {
+                                        if (Convert.ToInt32(item.DATA_LENGTH.ToUpper().ToString()) > 4000)
+                                        {
+                                            v_script = v_script + " CLOB ";
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            v_script = v_script + "  " + item2.Equivalencia.ToUpper().ToString();
+
+                                            v_script = v_script + " (" + item.DATA_LENGTH.ToUpper().ToString() + " )";
+                                            break;
+                                        }
+
+                                    }
+                                    else if (item.DATA_TYPE.ToUpper() == "FLOAT")
+                                    {
+                                        v_script = v_script + " FLOAT ";
                                     }
                                     else
                                     {
-                                        v_script = v_script + "  " + item2.Equivalencia.ToString();
-
-                                        v_script = v_script + " (" + item.DATA_LENGTH.ToString() + " )";
+                                        v_script = v_script + "  " + item2.Equivalencia;
+                                        if (item.DATA_LENGTH.ToUpper().Replace(" ", "").Length > 0)
+                                        {
+                                            v_script = v_script + " (" + item.DATA_LENGTH + ") ";
+                                        }
+                                        else
+                                        {
+                                            v_script = v_script + " " + item2.EqPropiedad.ToUpper().ToString() + " ";
+                                        }
                                         break;
-                                    }
 
-                                }
-                                else if (item.DATA_TYPE == "FLOAT")
-                                {
-                                    v_script = v_script + " FLOAT ";
+                                    }
                                 }
                                 else
                                 {
@@ -533,24 +557,10 @@ namespace ToolMigration.Logic.Transformation
 
                                 }
                             }
-                            else
-                            {
-                                v_script = v_script + "  " + item2.Equivalencia;
-                                if (item.DATA_LENGTH.Replace(" ", "").Length > 0)
-                                {
-                                    v_script = v_script + " (" + item.DATA_LENGTH + ") ";
-                                }
-                                else
-                                {
-                                    v_script = v_script + " " + item2.EqPropiedad + " ";
-                                }
-                                break;
-
-                            }
                         }
+
                     }
-                    
-                    }
+                }
 
                 // asignar si es  nullable o no
 

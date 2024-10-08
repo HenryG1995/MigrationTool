@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.Data.SqlClient;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Oracle.ManagedDataAccess.Client;
 using System.Data;
 using System.Diagnostics;
@@ -29,7 +30,7 @@ namespace ToolMigration.Logic.Connections
             // var STR = Environment.GetEnvironmentVariable("STR");
 
             // connectionString = string.Format("USER ID={0};PASSWORD={1};DATA SOURCE= (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = {2})(PORT = {3}))(CONNECT_DATA = (SERVICE_NAME ={4}))) ;", UserID, Pass, Host, Port, ServiceName);
-            connectionString = string.Format("USER ID={0};PASSWORD={1};DATA SOURCE= (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = {2})(PORT = {3}))(CONNECT_DATA = (SID = {4}))) ;Min Pool Size=0;Max Pool Size=100;Incr Pool Size=15;Connection Timeout=0;", UserID, Pass, Host, Port, SID);
+            connectionString = string.Format("USER ID={0};PASSWORD={1};DATA SOURCE= (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = {2})(PORT = {3}))(CONNECT_DATA = (SID = {4}))) ;Min Pool Size=5;Max Pool Size=100;Incr Pool Size=15;Connection Timeout=0;", UserID, Pass, Host, Port, SID);
 
             // connectionString = "Data Source=tu_servidor:1521/tu_sid;User Id=tu_usuario;Password=tu_contrasena;";
 
@@ -43,7 +44,7 @@ namespace ToolMigration.Logic.Connections
                 try
                 {
                     connection.Open();
-                    Debug.WriteLine("Conexión establecida correctamente");
+                //    Debug.WriteLine("Conexión establecida correctamente");
 
                     // Aquí puedes ejecutar tus consultas SQL
                     OracleCommand command = new OracleCommand("SELECT SYS_GUID() UUID FROM DUAL", connection);
@@ -61,11 +62,38 @@ namespace ToolMigration.Logic.Connections
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine("Error al conectar: " + ex.Message);
+                   // Debug.WriteLine("Error al conectar: " + ex.Message);
                     return false;
                 }
             };
         }
+
+
+        public void cierra_sessiones(string connectionString)
+        {
+            using (OracleConnection connection = new OracleConnection(connectionString))
+            {
+                try
+                {
+                    connection.Open();
+                    OracleConnection.ClearAllPools();
+                    connection.Close();
+                }
+                catch (OracleException ex)
+                {
+                    Console.WriteLine($"Error en Oracle: {ex.Message}");
+                }
+                finally
+                {
+                    if (connection.State == ConnectionState.Open)
+                    {
+                        connection.Close();
+                        Console.WriteLine("Conexión cerrada.");
+                    }
+                }
+            }
+        }
+
         public bool SqlTest(string usuario, string pass, string host, string port, string database)
         {
 
@@ -314,7 +342,7 @@ namespace ToolMigration.Logic.Connections
                 try
                 {
                     connection.Open();
-                    Debug.WriteLine("Conexion SQL establecida correctamente");
+                 //   Debug.WriteLine("Conexion SQL establecida correctamente");
                     SqlCommand command = new SqlCommand(sql);
                     SqlDataReader reader = command.ExecuteReader();
 
@@ -326,7 +354,8 @@ namespace ToolMigration.Logic.Connections
                 }
                 catch (Exception ex)
                 {
-
+                    connection.Dispose();
+                    Debug.WriteLine(ex.Message);
                     return dt;
                 }
 
@@ -390,7 +419,7 @@ namespace ToolMigration.Logic.Connections
                 try
                 {
                     connection.Open();
-                    Debug.WriteLine("Conexion SQL establecida correctamente");
+                 //   Debug.WriteLine("Conexion SQL establecida correctamente");
                     SqlCommand command = new SqlCommand(sql);
                     SqlDataReader reader = command.ExecuteReader();
 
@@ -403,6 +432,7 @@ namespace ToolMigration.Logic.Connections
                 }
                 catch (Exception ex)
                 {
+                    Debug.WriteLine(ex.Message);
                     connection.Close();
                     return dt;
                 }
@@ -434,61 +464,84 @@ namespace ToolMigration.Logic.Connections
 
             using (var connection = new OracleConnection(ConnectionSQlOra))
             {
-                OracleTransaction transaction = null;
+               
+                var str = "";
+                OracleTransaction? transaction = null;
                 connection.Open();
                 transaction = connection.BeginTransaction();
                 try
                 {
-                    // Abrimos la conexión
-
-                    Debug.WriteLine("Conexión a la base de datos exitosa.");
-
-                    // comando para ejecutar el script
+               
                     using (var command = new OracleCommand(ScriptOra, connection))
                     {
                         command.Transaction = transaction;
                         // Ejecutamos el comando
                         command.ExecuteNonQuery();
 
-
                     }
                     transaction.Commit();
+                    connection.Close ();
                     return true;
                 }
                 catch (OracleException ex)
                 {
+                    var rvalue = true;
                     // Manejo de errores
                     Debug.WriteLine($"Error al ejecutar la consulta: {ex.Message}");
                     if (ex.Number == 942)
                     {
                         Debug.WriteLine("Error porque no encontro la tabla " + ScriptOra);
+                        str =("Error porque no encontro la tabla " + ScriptOra);
+                        rvalue = false;
                     }
                     else if (ex.Number == 54)
                     {
                         Debug.WriteLine("Error acquire with NOWAIT : " + ex.Message + ScriptOra);
+                        str = ("Error acquire with NOWAIT : " + ex.Message + ScriptOra);
+
                     }
                     else if (ex.Number == 955)
                     {
                         Debug.WriteLine("Error al recrear porque el objeto ya existe  : " + ScriptOra + ex.Message);
+                       // str = ("Error al recrear porque el objeto ya existe  : " + ScriptOra + ex.Message);
                     }
                     else if (ex.Number == 1408)
                     {
                         Debug.WriteLine("Error al recrear porque el indice porque ya existe  : " + ScriptOra + ex.Message);
+                       // str = ("Error al recrear porque el indice porque ya existe  : " + ScriptOra + ex.Message);
                     }
                     else if (ex.Number == 2260)
                     {
                         Debug.WriteLine("Error al recrear la llave primaria porque ya existe :" + ScriptOra + ex.Message);
+                       // str = ("Error al recrear la llave primaria porque ya existe :" + ScriptOra + ex.Message);
                     }
                     else if (ex.Number == 2275)
                     {
                         Debug.WriteLine("Error al recrear la llave foranea porque ya existe :" + ScriptOra + ex.Message);
-                    }else
+                       // str = ("Error al recrear la llave foranea porque ya existe :" + ScriptOra + ex.Message);
+                    }else   if (ex.Number == 4020)
+                    {
+                        Debug.WriteLine("Error al eliminar objeto por recurso utilizado, se reintenta automaticamente " + ScriptOra + ex.Message);
+                      //  str = ("Error al recrear la llave foranea porque ya existe :" + ScriptOra + ex.Message);
+                    }else   if (ex.Number == 2270)
+                    {
+                        Debug.WriteLine("se cambia a IDX automaticamente " + ScriptOra + ex.Message);
+                    //    str = ("Error al recrear la llave foranea porque ya existe :" + ScriptOra + ex.Message);
+                        rvalue = false;
+                    }
+                    else
                     {
                         Debug.WriteLine("Error desconocido :" + ScriptOra + ex.Message);
+                        str = ("Error desconocido :" + ScriptOra + ex.Message);
+                        rvalue = false;
+
+
                     }
+                    EscribirLogAsync(path_log,str).Wait();
+
                     transaction.Rollback();
                     connection.Close();
-                    return false;
+                    return rvalue;
                 }
                 finally
                 {
@@ -496,8 +549,8 @@ namespace ToolMigration.Logic.Connections
                     if (connection.State == System.Data.ConnectionState.Open)
                     {
                         connection.Close();
-                        Debug.WriteLine("Conexión cerrada.");
-                        EscribirLogAsync(path_log, "Conexion Cerrada").Wait();
+                       // Debug.WriteLine("Conexión cerrada.");
+                        
                     }
 
                 }
@@ -726,13 +779,9 @@ namespace ToolMigration.Logic.Connections
         {
             // Generar el script de borrado de la tabla
             var script = "drop table " + tabla + " cascade constraints purge";
-
-            // Simular un retraso de 50 ms
-            await Task.Delay(50);
             // Ejecutar el script en la base de datos Oracle
             var ret = executeQueryOracle(OraConn, script, path_log);
-            await Task.Delay(50);
-
+     
             return ret;
         }
 
@@ -747,7 +796,7 @@ namespace ToolMigration.Logic.Connections
                 using (OracleConnection connection = new OracleConnection(connectionOra))
                 {
                     // Abrimos la conexión
-                    OracleTransaction transaction = null;
+                    OracleTransaction? transaction = null;
                     connection.Open();
                     transaction = connection.BeginTransaction();
                     try
@@ -772,8 +821,9 @@ namespace ToolMigration.Logic.Connections
                     }
                     catch (Exception ex)
                     {
+                        Debug.WriteLine(ex.Message);
                         transaction.Rollback();
-                        connection.Dispose();
+                        connection.Close();
                         return false;
                     }
 
