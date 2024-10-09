@@ -6,6 +6,7 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
+using System.Windows.Media.Media3D;
 using ToolMigration.Logic.Connections;
 using ToolMigration.Logic.DataModels;
 using ToolMigration.Logic.Tools;
@@ -578,7 +579,7 @@ namespace ToolMigration
         }
 
 
-        #region funciona_pero_con_problemas_en_cincronizacion
+        #region funcion creacion de scripts
         private async Task proceso_crea_scripts(string sql, List<TablasDestino> tablasDestinoList, string ruta, bool CreaTablas = false, bool perso = false, bool ejecuta = false, string path_log = "C://", bool migra = true)
         {
             if (migra == false)
@@ -756,26 +757,26 @@ namespace ToolMigration
                             Scripting scripting = new Scripting();
                             List<string> lista_scripts = scripting.scriptListRead(sql, script_txt);
 
-                            
-                                // Actualizar UI desde el hilo principal
-                                Application.Current.Dispatcher.Invoke(() =>
-                                {
-                                    foreach (string script in lista_scripts)
-                                    {
-                                        List<scriptList> scriptingList = genScriptDestino.GenScriptText(script.ToString(), sql);
 
-                                        foreach (var itemScript in scriptingList)
+                            // Actualizar UI desde el hilo principal
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                foreach (string script in lista_scripts)
+                                {
+                                    List<scriptList> scriptingList = genScriptDestino.GenScriptText(script.ToString(), sql);
+
+                                    foreach (var itemScript in scriptingList)
+                                    {
+                                        lock (lockObject)
                                         {
-                                            lock (lockObject)
-                                            {
-                                                sw.WriteLine(itemScript.script.ToString().Replace("''","NULL") + ";");
-                                            }
-                                            
-                                          
+                                            sw.WriteLine(itemScript.script.ToString().Replace("''", "NULL") + ";");
                                         }
+
+
                                     }
-                                });
-                           
+                                }
+                            });
+
 
                             lock (lockObject)
                             {
@@ -1051,7 +1052,7 @@ namespace ToolMigration
         //    }
         //}
         #endregion
-
+        #region ajuste AsyncPrueba
         //private async Task proceso_crea_scripts(string sql, List<TablasDestino> tablasDestinoList, string ruta, bool CreaTablas = false, bool perso = false, bool ejecuta = false, string path_log = "C://", bool migra = true)
         //{
         //    if (migra == false)
@@ -1326,6 +1327,9 @@ namespace ToolMigration
 
 
         //}
+        #endregion
+
+
         private void chk_cancela_destino_checked(object sender, EventArgs e)
         {
 
@@ -1568,7 +1572,7 @@ namespace ToolMigration
 
                 ruta = (txt_ruta_archivo.Text.Length <= 0) ? "C:/script" : txt_ruta_archivo.Text + "\\script" + uniqueNumber + "." + selectedValue;
 
-                path_log2 = (txt_ruta_archivo.Text.Length <= 0) ? "/Log" + uniqueNumber + ".txt" : txt_ruta_archivo.Text + "\\Log" + uniqueNumber + ".txt" ; ;
+                path_log2 = (txt_ruta_archivo.Text.Length <= 0) ? "/Log" + uniqueNumber + ".txt" : txt_ruta_archivo.Text + "\\Log" + uniqueNumber + ".txt"; ;
             }
             else
             {
@@ -1578,7 +1582,9 @@ namespace ToolMigration
 
 
             bool genScriptTables = chk_GenScript_tables.IsChecked.Value;
+
             bool convertManual = chk_Convert_Manual.IsChecked.Value;
+            
             var tablas = ListTablas.ToList();
 
             await proceso_crea_scripts(sqlcon_data, tablas, ruta, genScriptTables, convertManual, false, path_log2, false);
@@ -1610,6 +1616,11 @@ namespace ToolMigration
             Guid guid = Guid.NewGuid();
             string uniqueNumber = BitConverter.ToInt64(guid.ToByteArray(), 0).ToString();
             var log_ubi = PathLogScript + "\\Log" + uniqueNumber.ToString() + ".txt";
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                LstResumenLogMigra.Items.Add(log_ubi);
+            });
+
 
             int maxThreads = Environment.ProcessorCount;
 
@@ -1640,10 +1651,12 @@ namespace ToolMigration
                     MaxDegreeOfParallelism = 1 // Usa tantos hilos como núcleos disponibles problema con la base de datos hay que validar
                 };
                 Conn translateData = new Conn();
+                
                 double startPercentage = 0;  // Inicio de este bloque
+
                 double endPercentage = 25;   // Fin de este bloque
-                //translateData.cierra_sessiones(OracleConnection);
-                // Usamos Parallel.ForEach para borrar las tablas en paralelo
+                
+               // Usamos Parallel.ForEach para borrar las tablas en paralelo
                 Parallel.ForEach(litaTablasDestino.Select((value, index) => (value, index)), parallelOptions, async (tborrarWithIndex) =>
                 {
                     var (tborrar, index) = tborrarWithIndex;
@@ -1657,20 +1670,27 @@ namespace ToolMigration
                     double percentage = startPercentage + (((double)(index + 1) / total) * (endPercentage - startPercentage));
 
                     // Actualizamos el progreso de manera segura en la UI usando Dispatcher
-                    await Dispatcher.InvokeAsync(() =>
+                    await Dispatcher.InvokeAsync(async () =>
                     {
-                        // Actualizamos la barra de progreso y el texto de la UI de manera segura
                         progressBar_Migracion.Value = percentage;
-                        ProgressTextMigracion.Text = $"Progreso: {percentage.ToString("F2")}%";
-                    });
 
+                        ProgressTextMigracion.Text = $"Progreso: {percentage.ToString("F2")}%";
+                        
+                        //proceso_log_visor(" se realiza borrado de tabla " + tborrar.TABLE_NAME + " , Resultado de borrado : " + resul.ToString());
+                    });
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        LstResumenLogMigra.Items.Add("Borrado de tabla : " + tborrar.TABLE_NAME);
+                    });
 
 
                 });
 
                 //CREACION DE TABLAS EN PARALELL
                 startPercentage = 25;  // Inicio de este bloque
+
                 endPercentage = 50;   // Fin de este bloque
+                
                 Parallel.ForEach(litaTablasDestino.Select((value, index) => (value, index)), parallelOptions, async (itemWithIndex) =>
                 {
                     var (item, index) = itemWithIndex;
@@ -1680,6 +1700,7 @@ namespace ToolMigration
                     GenScriptDestino genScript = new GenScriptDestino();
 
                     var resul = false;
+
                     var script = "";
                     // Creación de tabla
                     if (genPerso == true)
@@ -1687,8 +1708,11 @@ namespace ToolMigration
                         script = genScript.GenScriptTablesPerso(item.TABLE_NAME, listDataTypesConvert.ToList(), SqlConnection);
                         if (GenLog)
                         {
+
                             mensajeLog = $"{DateTime.Now}: {item.TABLE_NAME}, Script para creacion de tabla = {script}";
+
                             translateData.EscribirLogAsync(log_ubi, mensajeLog).Wait(); // Wait para asegurar que se complete antes de seguir
+
                         }
 
                     }
@@ -1698,13 +1722,24 @@ namespace ToolMigration
                         if (GenLog)
                         {
                             mensajeLog = $"{DateTime.Now}: {item.TABLE_NAME}, Script para creacion de tabla = {script}";
+                            
                             translateData.EscribirLogAsync(log_ubi, mensajeLog).Wait(); // Wait para asegurar que se complete antes de seguir
+
                         }
+
                     }
 
 
                     var result = translateData.executeQueryOracle(OracleConnection, script, log_ubi);
+                    
                     Debug.WriteLine("Tabla : " + item.TABLE_NAME + " Estado de creacion de tabla : " + result);
+
+
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        LstResumenLogMigra.Items.Add("Tabla : " + item.TABLE_NAME + " Estado de creacion de tabla : " + result);
+                    });
+
                     if (GenLog == true)
                     {
                         if (result == false)
@@ -1719,6 +1754,7 @@ namespace ToolMigration
                         }
 
                     }
+
                     // Creación de llave primaria
                     var script_primaryk = genScript.GenScriptPrimaryKey(item.TABLE_NAME);
                     var listScriptPrimaryky = genScript.GenScriptText(script_primaryk, SqlConnection);
@@ -1732,8 +1768,14 @@ namespace ToolMigration
                             mensajeLog = $"{DateTime.Now}: {item.TABLE_NAME}, Script reacion de llave primaria  = {item2.script.Replace(";", "")}";
                             translateData.EscribirLogAsync(log_ubi, mensajeLog).Wait(); // Wait para asegurar que se complete antes de seguir
                         }
-                    }
 
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            LstResumenLogMigra.Items.Add("Tabla : " + item.TABLE_NAME + " Estado de creacion de llave primaria : " + resul);
+
+                        });
+
+                    }
 
 
                 });
@@ -1768,19 +1810,29 @@ namespace ToolMigration
                     }
 
                     // Actualizamos el progreso de manera segura en la UI usando Dispatcher
-                    await Dispatcher.InvokeAsync(() =>
+                    await Dispatcher.InvokeAsync(async () =>
                     {
-                        // Actualizamos la barra de progreso y el texto de la UI de manera segura
+
+                        //proceso_log_visor(" se realiza insercion para tabla " + item.TABLE_NAME);
 
                         progressBar_Migracion.Value = percentage;
+
                         ProgressTextMigracion.Text = $"Progreso: {percentage.ToString("F2")}%";
+
+                    });
+
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        LstResumenLogMigra.Items.Add($"{DateTime.Now}: {item.TABLE_NAME}, insercion realizada = {result}");
                     });
 
                 });
 
 
                 startPercentage = 75;  // Inicio de este bloque
+
                 endPercentage = 100;   // Fin de este bloque
+                
                 Parallel.ForEach(litaTablasDestino.Select((value, index) => (value, index)), parallelOptions, async (itemWithIndex) =>
                 {
                     var (item, index) = itemWithIndex;
@@ -1796,7 +1848,14 @@ namespace ToolMigration
                         // Crear una nueva conexión por cada hilo
 
                         result = translateData.executeQueryOracle(OracleConnection, item2.script.Replace(";", ""), log_ubi);
-                        Debug.WriteLine($"Tabla: {item.TABLE_NAME}, Ejecución de llave foránea = {result}");
+                       
+                        Debug.WriteLine($"Tabla: {item.TABLE_NAME}, Ejecución de  = {result}");
+
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            LstResumenLogMigra.Items.Add("Creacion de llave foranea para :" + item.TABLE_NAME );
+
+                        });
 
                     }
 
@@ -1812,13 +1871,21 @@ namespace ToolMigration
                         if (GenLog)
                         {
                             mensajeLog = $"{DateTime.Now}: {item.TABLE_NAME}, Script de creacion de indices: = {item2.script.Replace(";", "")}";
+
                             translateData.EscribirLogAsync(log_ubi, mensajeLog).Wait(); // Wait para asegurar que se complete antes de seguir
+                        
                         }
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            LstResumenLogMigra.Items.Add("Creacion de creacion de indices para :" + item.TABLE_NAME);
+
+                        });
                     }
 
                     // Actualización del progreso
 
                     mensajeLog = $"{DateTime.Now}: {item.TABLE_NAME}, Creacion De índices Correcta = {result}";
+
                     translateData.EscribirLogAsync(log_ubi, mensajeLog).Wait(); // Wait para asegurar que se complete antes de seguir
 
 
@@ -1828,19 +1895,32 @@ namespace ToolMigration
                     {
                         // Actualizamos la barra de progreso y el texto de la UI de manera segura
                         progressBar_Migracion.Value = percentage;
+
                         ProgressTextMigracion.Text = $"Progreso: {percentage.ToString("F2")}%";
+                    
                     });
 
                 });
 
                 System.Windows.MessageBox.Show("fin de la migracion.");
 
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    LstResumenLogMigra.Items.Add("FIN DE MIGRACION");
+
+                });
+
+
                 double percentage = 100;
-                await Dispatcher.InvokeAsync(() =>
+                await Dispatcher.InvokeAsync(async () =>
                 {
                     // Actualizamos la barra de progreso y el texto de la UI de manera segura
                     progressBar_Migracion.Value = percentage;
+                  
                     ProgressTextMigracion.Text = $"Progreso: {percentage.ToString("F2")}%";
+                    
+               
+
                 });
 
 
@@ -1856,7 +1936,7 @@ namespace ToolMigration
                 object lockObj = new object(); // Bloqueo para actualizaciones seguras
                 Conn conn = new Conn();
                 // Usa la ruta del TextBox (txt_logPath.Text) si no está vacía, si lo está, usa una ruta predeterminada
-               
+
                 //conn.cierra_sessiones(OracleConnection);
                 ParallelOptions parallelOptions = new ParallelOptions
                 {
@@ -1875,13 +1955,18 @@ namespace ToolMigration
                         {
                             // Obtener datos de origen y realizar la inserción
                             var dtorigen = conn.DataOrigen(SqlConnection, item.TABLE_NAME);
+                            
                             var result = conn.Destino(dtorigen, item.TABLE_NAME, OracleConnection, listDataTypesConvert.ToList());
+
                             Debug.WriteLine($"{item.TABLE_NAME} , insercion realizada = {result}");
+                            
                             if (GenLog)
                             {
                                 // Escribir el log en el archivo de manera asíncrona
                                 mensajeLog = $"{DateTime.Now}: {item.TABLE_NAME}, insercion realizada = {result}";
+                            
                                 conn.EscribirLogAsync(log_ubi, mensajeLog).Wait(); // Wait para asegurar que se complete antes de seguir
+                            
                             }
 
                         }
@@ -1907,7 +1992,9 @@ namespace ToolMigration
                             Dispatcher.InvokeAsync(() =>
                             {
                                 progressBar_Migracion.Value = Math.Round(porcentaje, 2); // Mostrar solo 2 decimales
+
                                 ProgressTextMigracion.Text = $"Progreso: {Math.Round(porcentaje, 2)}%";
+                            
                             });
                         }
                     });
@@ -1922,21 +2009,21 @@ namespace ToolMigration
             if (GenScript)
             {
 
-               
+
                 if (genPerso)
                 {
-                   
-                        await proceso_crea_scripts(sqlcon_data, tablas, PathLogScript + "\\Script" + Guid.NewGuid().ToString().ToUpper().Substring(1, 10).ToString() + ".sql", true, true, false, PathLogScript, true);
-                
+
+                    await proceso_crea_scripts(sqlcon_data, tablas, PathLogScript + "\\Script" + Guid.NewGuid().ToString().ToUpper().Substring(1, 10).ToString() + ".sql", true, true, false, PathLogScript, true);
+
 
                     // Inicia el hilo
                 }
                 else
                 {
 
-                    
-                        await proceso_crea_scripts(sqlcon_data, tablas, PathLogScript + "\\Script" + Guid.NewGuid().ToString().ToUpper().Substring(1, 10).ToString() + ".sql", true, false, false, PathLogScript, true);
-                  
+
+                    await proceso_crea_scripts(sqlcon_data, tablas, PathLogScript + "\\Script" + Guid.NewGuid().ToString().ToUpper().Substring(1, 10).ToString() + ".sql", true, false, false, PathLogScript, true);
+
                 }
 
 

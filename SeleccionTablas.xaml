@@ -5,12 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ToolMigration"
         mc:Ignorable="d"
-        Title="MigrationTool" Height="545" Width="1199" ResizeMode="NoResize" HorizontalAlignment="Center" VerticalAlignment="Center" WindowStyle="ToolWindow" WindowStartupLocation="CenterScreen" Cursor="Arrow">
-    <Grid Margin="0,0,0,43">
+        Title="MigrationTool" Height="545" Width="1221" ResizeMode="NoResize" HorizontalAlignment="Center" VerticalAlignment="Center" WindowStyle="ToolWindow" WindowStartupLocation="CenterScreen" Cursor="Arrow" Background="{x:Null}">
+    <Grid Margin="0,0,28,43">
         <Grid.ColumnDefinitions>
 
         </Grid.ColumnDefinitions>
-        <TabControl Margin="20,10,0,-10" HorizontalAlignment="Left" Width="1164">
+        <TabControl Margin="20,10,0,-10" HorizontalAlignment="Left" Width="1164" Background="#FFB7B7B7">
             <TabItem x:Name="tab_selector" Header="Selector de tablas">
                 <Grid Background="#FFE5E5E5" Height="429" HorizontalAlignment="Right" Width="1133" Margin="0,0,15,0">
                     <Grid Margin="0,-21,0,0">
@@ -51,9 +51,13 @@
             </TabItem>
             <TabItem x:Name="tab_conversion"
         Header="Conversiones">
-                <Grid Background="#FFE5E5E5">
-                    <CheckBox x:Name="chk_Convert_Manual" Content="Conversion Manual" HorizontalAlignment="Left" Margin="10,33,0,0" VerticalAlignment="Top" Checked="chk_Convert_Manual_chked" Unchecked="chk_Convert_Manual_chked"/>
-                    <GroupBox Header="SQL &lt;----&gt; ORACLE" Margin="0,67,0,0">
+                <Grid Background="White">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="32*"/>
+                        <ColumnDefinition Width="547*"/>
+                    </Grid.ColumnDefinitions>
+                    <CheckBox x:Name="chk_Convert_Manual" Content="Conversion Manual" HorizontalAlignment="Left" Margin="10,33,0,0" VerticalAlignment="Top" Checked="chk_Convert_Manual_chked" Unchecked="chk_Convert_Manual_chked" Grid.ColumnSpan="2"/>
+                    <GroupBox Header="SQL &lt;----&gt; ORACLE" Margin="0,67,0,0" Grid.ColumnSpan="2">
                         <DataGrid x:Name="dt_tabla_conversiones"  SelectionChanged="DataGrid_SelectionChanged" AutoGenerateColumns="False">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="NO"  IsReadOnly="True" Binding="{Binding NO}"/>
@@ -121,7 +125,7 @@
 
                     <CheckBox x:Name="chk_GenScript_tables" HorizontalAlignment="Left" Margin="47,113,0,0" VerticalAlignment="Top" Width="157" Content="Generar Tablas" Checked="CheckBox_Checked"/>
                     <CheckBox Content="Generar Insert " HorizontalAlignment="Left" VerticalAlignment="Top" Width="157" Margin="47,138,0,0"/>
-                    <ListBox x:Name="lstBoxScripting" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="66,69,37,64" Cursor="ScrollAll" Grid.Column="1"/>
+                    <ListBox x:Name="lstBoxScripting" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="66,69,37,64" Cursor="ScrollN" Grid.Column="1"/>
 
 
                     <TextBlock x:Name="progressText" Text="Progreso: 0%" RenderTransformOrigin="0.318,-0.093" Margin="170,401,510,17" Grid.Column="1"/>
@@ -134,12 +138,12 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
-                    <ProgressBar x:Name="progressBar_Migracion" Height="35" Minimum="0" Maximum="100" VerticalAlignment="Top" Margin="-1,422,21,0" LargeChange="6"/>
+                    <ProgressBar x:Name="progressBar_Migracion" Height="35" Minimum="0" Maximum="100" VerticalAlignment="Top" Margin="-1,422,21,0" LargeChange="35"/>
 
                     <TextBox x:Name="txt_logPath" HorizontalAlignment="Left" Margin="114,66,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="147" TextChanged="txt_logPath_TextChanged" Height="18"/>
                     <Label Content="Ubicacion de log" HorizontalAlignment="Left" Margin="10,62,0,0" VerticalAlignment="Top" Height="26" Width="99"/>
                     <CheckBox x:Name="chk_log_migra" Content="Habilitar Log" HorizontalAlignment="Left" Margin="10,42,0,0" VerticalAlignment="Top" Height="15" Width="88"/>
-                    <ListBox d:ItemsSource="{d:SampleData ItemCount=5}" Margin="0,193,21,57"/>
+                    <ListBox x:Name="LstResumenLogMigra" Margin="0,193,21,57"/>
                     <Label Content="Resumen de migracion" HorizontalAlignment="Left" Margin="0,167,0,0" VerticalAlignment="Top" Height="26" Width="131"/>
                     <Button x:Name="btn_migrar" Content="Iniciar Migracion" HorizontalAlignment="Left" Margin="10,110,0,0" VerticalAlignment="Top" Height="31" Width="224" Click="Button_Click_2"/>
                     <CheckBox x:Name="chk_gen_script_migra" Content="Generar Scripts" HorizontalAlignment="Left" Margin="10,22,0,0" VerticalAlignment="Top" Height="15" Width="101"/>

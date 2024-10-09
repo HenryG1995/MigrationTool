@@ -61,13 +61,15 @@ select UPPER(dt.ainsert)+dt.SCRIPT from (
         SELECT 'SELECT ''' +
        (select 'INSERT INTO ""' + T.TABLE_NAME + '"" (' + STRING_AGG('""' + T.column_name + '""', ',') + ')  VALUES ('
         from INFORMATION_SCHEMA.columns T
-        where T.table_name = '"+ tabla+@"'
+        where T.table_name = '"+ tabla + @"'
         GROUP BY T.TABLE_NAME) ainsert ,
        (SELECT STRING_AGG(
                        (CASE
+                           WHEN DATA_TYPE IN ('date', 'datetime', 'datetime2', 'time', 'timestamp')
+                            THEN CONCAT(''''''''+'+ISNULL(ISNULL(CONVERT(CHAR(19),[', COLUMN_NAME, '], 120),''''),''null'')+''''''')
                             WHEN DATA_TYPE IN
                                 ('varchar', 'nvarchar', 'char', 'nchar', 'text', 'ntext',
-                                 'date', 'datetime', 'datetime2', 'smalldatetime', 'time', 'timestamp',
+                                  'smalldatetime',
                                  'binary', 'varbinary', 'image', 'uniqueidentifier', 'hierarchyid', 'xml')
                                 THEN CONCAT(''''''''+'+ISNULL(ISNULL([', COLUMN_NAME, '],''''),''null'')+''''''')
                             WHEN DATA_TYPE IN
@@ -81,7 +83,7 @@ select UPPER(dt.ainsert)+dt.SCRIPT from (
                    AS COLUMN_NAME_WITH_QUOTES
 
         FROM INFORMATION_SCHEMA.COLUMNS T
-        where T.table_name = '"+ tabla+@"') + ' )''AS SCRIPT FROM "+ tabla+@"' as ""SCRIPT"" ) as dt";
+        where T.table_name = '"+ tabla + @"') + ' )''AS SCRIPT FROM "+ tabla + @"' as ""SCRIPT"" ) as dt";
 
             return script_insert;
         }
