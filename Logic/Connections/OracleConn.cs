@@ -564,75 +564,7 @@ namespace ToolMigration.Logic.Connections
             }
         }
 
-        //public async Task<bool> executeQueryOracle(string ConnectionSQlOra, string ScriptOra, string path_log)
-        //{
-        //    using (var connection = new OracleConnection(ConnectionSQlOra))
-        //    {
-        //        OracleTransaction transaction = null;
-
-        //        await connection.OpenAsync();  // Abrir la conexión de manera asíncrona
-        //        transaction = connection.BeginTransaction();
-        //        try
-        //        {
-        //            // Abrimos la conexión
-        //            Debug.WriteLine("Conexión a la base de datos exitosa.");
-
-        //            // Comando para ejecutar el script
-        //            using (var command = new OracleCommand(ScriptOra, connection))
-        //            {
-        //                command.Transaction = transaction;
-
-        //                // Ejecutamos el comando de manera asíncrona
-        //                await command.ExecuteNonQueryAsync();
-        //            }
-
-        //            // Commit de la transacción
-        //            await transaction.CommitAsync();
-        //            return true;
-        //        }
-        //        catch (OracleException ex)
-        //        {
-        //            // Manejo de errores
-        //            Debug.WriteLine($"Error al ejecutar la consulta: {ex.Message}");
-        //            if (ex.Number == 942)
-        //            {
-        //                Debug.WriteLine("Error porque no encontró la tabla " + ScriptOra);
-        //            }
-        //            else if (ex.Number == 54)
-        //            {
-        //                Debug.WriteLine("Error acquire with NOWAIT: " + ex.Message + " " + ScriptOra);
-        //            }
-        //            else if  (ex.Number == 955)
-        //            {
-        //                Debug.WriteLine("Objeto ya existente : " + ScriptOra + " " + ex.Message);
-        //            }
-        //            else if (ex.Number == 2260)
-        //            {
-        //                Debug.WriteLine("porque la llave primaria ya existe : " + ScriptOra + " " + ex.Message);
-        //            }else
-        //            {
-        //                Debug.WriteLine("Error desconocido : " + ScriptOra + " " + ex.Message);
-        //            }
-
-        //            // Rollback de la transacción
-        //            await transaction.RollbackAsync();
-        //            return false;
-        //        }
-        //        finally
-        //        {
-        //            // Cerramos la conexión
-        //            if (connection.State == System.Data.ConnectionState.Open)
-        //            {
-        //                await connection.CloseAsync();  // Cerrar la conexión de manera asíncrona
-        //                Debug.WriteLine("Conexión cerrada.");
-
-        //                // Escribir el log de manera asíncrona
-        //                await EscribirLogAsync(path_log, "Conexión Cerrada");
-        //            }
-        //        }
-        //    }
-        //}
-
+   
         public string EnsureConnectionTimeout(string connectionString, int timeoutInSeconds)
         {
             // Verificar si la cadena ya contiene "Connection Timeout"
@@ -650,82 +582,7 @@ namespace ToolMigration.Logic.Connections
             return connectionString;
         }
 
-        //public async Task<bool> executeQueryOracle(string ConnectionSQlOra, string ScriptOra, string path_log)
-        //{
-        //    // Verificar y agregar "Connection Timeout" si es necesario
-        //    ConnectionSQlOra = EnsureConnectionTimeout(ConnectionSQlOra, 60);  // 60 segundos o el valor que prefieras
-
-        //    using (var connection = new OracleConnection(ConnectionSQlOra))
-        //    {
-        //        OracleTransaction transaction = null;
-        //        Debug.WriteLine($"Cadena de conexión utilizada: {ConnectionSQlOra}");
-
-        //        connection.Open();  // Abrir la conexión de manera asíncrona
-
-        //        transaction = connection.BeginTransaction();
-        //        try
-        //        {
-        //            // Abrimos la conexión
-        //            Debug.WriteLine("Conexión a la base de datos exitosa.");
-
-        //            // Comando para ejecutar el script
-        //            using (var command = new OracleCommand(ScriptOra, connection))
-        //            {
-        //                command.Transaction = transaction;
-        //                command.CommandTimeout = 0; // Sin límite de tiempo para la ejecución del comando
-
-        //                // Ejecutamos el comando de manera asíncrona
-        //                await command.ExecuteNonQueryAsync();
-        //            }
-
-        //            // Commit de la transacción
-        //            await transaction.CommitAsync();
-        //            return true;
-        //        }
-        //        catch (OracleException ex)
-        //        {
-        //            // Manejo de errores
-        //            Debug.WriteLine($"Error al ejecutar la consulta: {ex.Message}");
-        //            if (ex.Number == 942)
-        //            {
-        //                Debug.WriteLine("Error porque no encontró la tabla " + ScriptOra);
-        //            }
-        //            else if (ex.Number == 54)
-        //            {
-        //                Debug.WriteLine("Error acquire with NOWAIT: " + ex.Message + " " + ScriptOra);
-        //            }
-        //            else if (ex.Number == 955)
-        //            {
-        //                Debug.WriteLine("Objeto ya existente : " + ScriptOra + " " + ex.Message);
-        //            }
-        //            else if (ex.Number == 2260)
-        //            {
-        //                Debug.WriteLine("porque la llave primaria ya existe : " + ScriptOra + " " + ex.Message);
-        //            }
-        //            else
-        //            {
-        //                Debug.WriteLine("Error desconocido : " + ScriptOra + " " + ex.Message);
-        //            }
-
-        //            // Rollback de la transacción
-        //            await transaction.RollbackAsync();
-        //            return false;
-        //        }
-        //        finally
-        //        {
-        //            // Cerramos la conexión
-        //            if (connection.State == System.Data.ConnectionState.Open)
-        //            {
-        //                await connection.CloseAsync();  // Cerrar la conexión de manera asíncrona
-        //                Debug.WriteLine("Conexión cerrada.");
-
-        //                // Escribir el log de manera asíncrona
-        //                await EscribirLogAsync(path_log, "Conexión Cerrada");
-        //            }
-        //        }
-        //    }
-        //}
-
+   
 
         public DataTable DataOrigen(string sqlConn, string Tabla)
         {
@@ -773,15 +630,6 @@ namespace ToolMigration.Logic.Connections
         }
 
 
-        //public bool BorrarTablas(string tabla, string OraConn, string path_log)
-        //{
-        //    var script = "drop table " + tabla + " cascade constraints purge";
-
-        //    var ret = executeQueryOracle(OraConn, script, path_log);
-
-        //    return ret;
-
-        //}
         public async Task<bool> BorrarTablas(string tabla, string OraConn, string path_log)
         {
             // Generar el script de borrado de la tabla

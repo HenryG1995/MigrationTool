@@ -3,16 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\logic\\connections\\oracleconn.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:logic\\connections\\oracleconn.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\selecciontablas.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:selecciontablas.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\logic\\transformation\\genscriptdestino.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:logic\\transformation\\genscriptdestino.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\logic\\connections\\oracleconn.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:logic\\connections\\oracleconn.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\logic\\transformation\\metadatacore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -81,17 +81,17 @@
       "DocumentGroups": [
         {
           "DockedWidth": 238,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "SeleccionTablas.xaml.cs",
               "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\SeleccionTablas.xaml.cs",
               "RelativeDocumentMoniker": "SeleccionTablas.xaml.cs",
               "ToolTip": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\SeleccionTablas.xaml.cs",
               "RelativeToolTip": "SeleccionTablas.xaml.cs",
-              "ViewState": "AgIAAOgHAAAAAAAAAAAIwAwIAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAIMCAAAAAAAAAAD4v5MCAABAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-10-05T02:45:49.156Z",
               "EditorCaption": ""
@@ -106,17 +106,18 @@
               "RelativeToolTip": "Logic\\DataMove\\SelectorD.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-10T03:59:08.905Z"
+              "WhenOpened": "2024-10-10T03:59:08.905Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "OracleConn.cs",
               "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\Connections\\OracleConn.cs",
               "RelativeDocumentMoniker": "Logic\\Connections\\OracleConn.cs",
               "ToolTip": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\Connections\\OracleConn.cs",
               "RelativeToolTip": "Logic\\Connections\\OracleConn.cs",
-              "ViewState": "AgIAAA4DAAAAAAAAAAAjwDcDAAA/AAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAHcCAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-10-05T03:20:31.713Z",
               "EditorCaption": ""
@@ -131,11 +132,12 @@
               "RelativeToolTip": "Logic\\Transformation\\TranslateData.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAkAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-08T01:26:09.081Z"
+              "WhenOpened": "2024-10-08T01:26:09.081Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "GenScriptDestino.cs",
               "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\Transformation\\GenScriptDestino.cs",
               "RelativeDocumentMoniker": "Logic\\Transformation\\GenScriptDestino.cs",
@@ -155,7 +157,8 @@
               "ToolTip": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\SeleccionTablas.xaml",
               "RelativeToolTip": "SeleccionTablas.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-10-09T05:21:16.146Z"
+              "WhenOpened": "2024-10-09T05:21:16.146Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -166,7 +169,8 @@
               "ToolTip": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\App.xaml",
               "RelativeToolTip": "App.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-10-09T05:22:16.567Z"
+              "WhenOpened": "2024-10-09T05:22:16.567Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -178,7 +182,8 @@
               "RelativeToolTip": "Logic\\Transformation\\Scripting.cs",
               "ViewState": "AgIAACQAAAAAAAAAAAAWwDgAAAAnAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-08T01:25:41.871Z"
+              "WhenOpened": "2024-10-08T01:25:41.871Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -190,7 +195,8 @@
               "RelativeToolTip": "Logic\\DataMove\\TypeD.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-10T03:59:09.805Z"
+              "WhenOpened": "2024-10-10T03:59:09.805Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -202,7 +208,8 @@
               "RelativeToolTip": "Logic\\DataMove\\TypeO.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-10T03:59:12.028Z"
+              "WhenOpened": "2024-10-10T03:59:12.028Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -214,7 +221,8 @@
               "RelativeToolTip": "Logic\\Transformation\\MetaDataCore.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAB4AAABKAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-07T19:52:11.771Z"
+              "WhenOpened": "2024-10-07T19:52:11.771Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -226,7 +234,8 @@
               "RelativeToolTip": "Logic\\DataMove\\Equivalency.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-10T03:59:14.116Z"
+              "WhenOpened": "2024-10-10T03:59:14.116Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -238,7 +247,8 @@
               "RelativeToolTip": "MainWindow.xaml.cs",
               "ViewState": "AgIAACEAAAAAAAAAAAAAwKkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-05T04:20:14.983Z"
+              "WhenOpened": "2024-10-05T04:20:14.983Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -250,7 +260,8 @@
               "RelativeToolTip": "ToolMigration.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2024-10-05T04:20:12.81Z"
+              "WhenOpened": "2024-10-05T04:20:12.81Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -261,7 +272,8 @@
               "ToolTip": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\MainWindow.xaml",
               "RelativeToolTip": "MainWindow.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-10-05T05:14:57.114Z"
+              "WhenOpened": "2024-10-05T05:14:57.114Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -273,7 +285,8 @@
               "RelativeToolTip": "Logic\\DataModels\\ConnString.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAWAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-05T04:20:09.607Z"
+              "WhenOpened": "2024-10-05T04:20:09.607Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -285,7 +298,8 @@
               "RelativeToolTip": "..\\..\\..\\..\\..\\Program Files\\dotnet\\sdk\\8.0.400\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.NET.Sdk.targets",
               "ViewState": "AgIAAAABAAAAAAAAAAAmwBsBAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003801|",
-              "WhenOpened": "2024-10-08T01:29:56.665Z"
+              "WhenOpened": "2024-10-08T01:29:56.665Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -297,7 +311,8 @@
               "RelativeToolTip": "Logic\\Tools\\CargarListas.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAUwBoAAAAxAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-08T01:31:25.18Z"
+              "WhenOpened": "2024-10-08T01:31:25.18Z",
+              "EditorCaption": ""
             }
           ]
         }
