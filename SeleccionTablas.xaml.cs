@@ -1807,14 +1807,15 @@ namespace ToolMigration
 
                     // Realizar inserción en el destino (Oracle)
                     var result = translateData.Destino(dtorigen, item.TABLE_NAME, OracleConnection, listDataTypesConvert.ToList());
-                    Debug.WriteLine(item.TABLE_NAME + " , insercion realizada = " + result+ " Total rows = "+dtorigen.Rows);
+                    
+                    Debug.WriteLine(item.TABLE_NAME + " , insercion realizada = " + result+ " Total rows = "+dtorigen.Rows.Count.ToString());
 
                     // Actualización del progreso
                     double percentage = startPercentage + (((double)(index + 1) / total) * (endPercentage - startPercentage));
 
                     if (GenLog)
                     {
-                        mensajeLog = $"{DateTime.Now}: {item.TABLE_NAME}, insercion realizada = {result}";
+                        mensajeLog = $"{DateTime.Now}: {item.TABLE_NAME}, insercion realizada = {result}" + " Total rows = " + dtorigen.Rows.Count.ToString();
 
                         translateData.EscribirLogAsync(log_ubi, mensajeLog).Wait(); // Wait para asegurar que se complete antes de seguir
                     }
@@ -1833,7 +1834,7 @@ namespace ToolMigration
 
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        LstResumenLogMigra.Items.Add($"{DateTime.Now}: {item.TABLE_NAME}  , insercion realizada =  {result}  Total rows = {dtorigen.Rows}");
+                        LstResumenLogMigra.Items.Add($"{DateTime.Now}: {item.TABLE_NAME}  , insercion realizada =  {result}  Total rows = {dtorigen.Rows.Count.ToString()}");
                     });
 
                 });
@@ -1968,19 +1969,19 @@ namespace ToolMigration
                             
                             var result = conn.Destino(dtorigen, item.TABLE_NAME, OracleConnection, listDataTypesConvert.ToList());
 
-                            Debug.WriteLine($"{item.TABLE_NAME} , insercion realizada = {result} Total rows =  {dtorigen.Rows}");
+                            Debug.WriteLine($"{item.TABLE_NAME} , insercion realizada = {result} Total rows =  {dtorigen.Rows.Count.ToString()}");
                             
                             if (GenLog)
                             {
                                 // Escribir el log en el archivo de manera asíncrona
-                                mensajeLog = $"{DateTime.Now}: {item.TABLE_NAME}, insercion realizada = {result}";
+                                mensajeLog = $"{DateTime.Now}: {item.TABLE_NAME}, insercion realizada = {result} Total rows =  {dtorigen.Rows.Count.ToString()}";
                             
                                 conn.EscribirLogAsync(log_ubi, mensajeLog).Wait(); // Wait para asegurar que se complete antes de seguir
                             
                             }
                             Application.Current.Dispatcher.Invoke(() =>
                             {
-                                LstResumenLogMigra.Items.Add($"{DateTime.Now}: {item.TABLE_NAME}  , insercion realizada =  {result}  Total rows = {dtorigen.Rows}");
+                                LstResumenLogMigra.Items.Add($"{DateTime.Now}: {item.TABLE_NAME}  , insercion realizada =  {result}  Total rows = {dtorigen.Rows.Count.ToString()}");
                             });
 
                         }

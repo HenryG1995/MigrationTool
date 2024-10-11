@@ -71,7 +71,7 @@ namespace ToolMigration.Logic.Transformation
                                 ('varchar', 'nvarchar', 'char', 'nchar', 'text', 'ntext',
                                   'smalldatetime',
                                  'binary', 'varbinary', 'image', 'uniqueidentifier', 'hierarchyid', 'xml')
-                                THEN CONCAT(''''''''+'+ISNULL(ISNULL([', COLUMN_NAME, '],''''),''null'')+''''''')
+                                THEN CONCAT(''''''''+'+ISNULL(ISNULL(CONVERT(VARCHAR(MAX), [', COLUMN_NAME, ']),''''),''null'')+''''''')
                             WHEN DATA_TYPE IN
                                 ('int', 'bit', 'bigint', 'smallint', 'tinyint', 'decimal', 'numeric', 'float', 'real',
                                  'money', 'smallmoney', 'binary', 'varbinary', 'rowversion', 'uniqueidentifier',
@@ -83,7 +83,7 @@ namespace ToolMigration.Logic.Transformation
                    AS COLUMN_NAME_WITH_QUOTES
 
     FROM INFORMATION_SCHEMA.COLUMNS T
-        where T.table_name = '"+ tabla + @"') + ' )''AS SCRIPT FROM "+ tabla + @"' as ""SCRIPT"" ) as dt";
+        where T.table_name = '" + tabla + @"') + ' )''AS SCRIPT FROM "+ tabla + @"' as ""SCRIPT"" ) as dt";
 
             return script_insert;
         }
