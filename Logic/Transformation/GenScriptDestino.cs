@@ -56,7 +56,7 @@ namespace ToolMigration.Logic.Transformation
         public string GENSCRIPT(string tabla)
         {
             var script_insert = @"
-select UPPER(dt.ainsert)+dt.SCRIPT from (
+    select UPPER(dt.ainsert)+dt.SCRIPT from (
 
         SELECT 'SELECT ''' +
        (select 'INSERT INTO ""' + T.TABLE_NAME + '"" (' + STRING_AGG('""' + T.column_name + '""', ',') + ')  VALUES ('
@@ -82,7 +82,7 @@ select UPPER(dt.ainsert)+dt.SCRIPT from (
                    , ',')
                    AS COLUMN_NAME_WITH_QUOTES
 
-        FROM INFORMATION_SCHEMA.COLUMNS T
+    FROM INFORMATION_SCHEMA.COLUMNS T
         where T.table_name = '"+ tabla + @"') + ' )''AS SCRIPT FROM "+ tabla + @"' as ""SCRIPT"" ) as dt";
 
             return script_insert;

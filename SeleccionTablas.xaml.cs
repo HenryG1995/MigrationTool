@@ -26,7 +26,9 @@ namespace ToolMigration
         public string rutaArchivoLog = "C:\\log.txt";
         public string sqlcon_data { get; set; }
         public string oracon_data { get; set; }
+
         public List<ItemDataGrid> listaT;
+        
         public List<TablasDestino> ListTablas = new List<TablasDestino>();
 
         private SeleccionTablas _mainWindow;
@@ -51,7 +53,6 @@ namespace ToolMigration
 
             dt_tabla_origen.AutoGenerateColumns = false;
 
-            // Agregar la columna NO (texto)
             DataConvertPerso dataConvertPerso = new DataConvertPerso();
 
             List<DataTypeConvert> datatypes = new List<DataTypeConvert>();
@@ -65,15 +66,21 @@ namespace ToolMigration
             dt_tabla_conversiones.Items.Refresh();
 
             LoadDataGridView();
-            //   tablas_destino();
+
             tablas_origen(sqlcon);
+
             sqlcon_data = sqlcon;
+            
             oracon_data = oracon;
 
             tab_migarcion.IsEnabled = false;
+            
             tab_conversion.IsEnabled = false;
+            
             tab_scripts.IsEnabled = false;
+            
             dt_tabla_origen.IsEnabled = false;
+            
             dt_tabla_destino.IsEnabled = false;
         }
 
@@ -1616,9 +1623,12 @@ namespace ToolMigration
             Guid guid = Guid.NewGuid();
             string uniqueNumber = BitConverter.ToInt64(guid.ToByteArray(), 0).ToString();
             var log_ubi = PathLogScript + "\\Log" + uniqueNumber.ToString() + ".txt";
+                var inicio = DateTime.Now.ToString();
             Application.Current.Dispatcher.Invoke(() =>
             {
                 LstResumenLogMigra.Items.Add(log_ubi);
+                LstResumenLogMigra.Items.Add(inicio);
+                LstResumenLogMigra.Items.Add("Inicia migracion");
             });
 
 
@@ -1797,7 +1807,7 @@ namespace ToolMigration
 
                     // Realizar inserción en el destino (Oracle)
                     var result = translateData.Destino(dtorigen, item.TABLE_NAME, OracleConnection, listDataTypesConvert.ToList());
-                    Debug.WriteLine(item.TABLE_NAME + " , insercion realizada = " + result);
+                    Debug.WriteLine(item.TABLE_NAME + " , insercion realizada = " + result+ " Total rows = "+dtorigen.Rows);
 
                     // Actualización del progreso
                     double percentage = startPercentage + (((double)(index + 1) / total) * (endPercentage - startPercentage));
@@ -1823,7 +1833,7 @@ namespace ToolMigration
 
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        LstResumenLogMigra.Items.Add($"{DateTime.Now}: {item.TABLE_NAME}, insercion realizada = {result}");
+                        LstResumenLogMigra.Items.Add($"{DateTime.Now}: {item.TABLE_NAME}  , insercion realizada =  {result}  Total rows = {dtorigen.Rows}");
                     });
 
                 });
@@ -1902,7 +1912,7 @@ namespace ToolMigration
 
                 });
 
-                System.Windows.MessageBox.Show("fin de la migracion.");
+                
 
                 Application.Current.Dispatcher.Invoke(() =>
                 {
@@ -1958,7 +1968,7 @@ namespace ToolMigration
                             
                             var result = conn.Destino(dtorigen, item.TABLE_NAME, OracleConnection, listDataTypesConvert.ToList());
 
-                            Debug.WriteLine($"{item.TABLE_NAME} , insercion realizada = {result}");
+                            Debug.WriteLine($"{item.TABLE_NAME} , insercion realizada = {result} Total rows =  {dtorigen.Rows}");
                             
                             if (GenLog)
                             {
@@ -1968,6 +1978,10 @@ namespace ToolMigration
                                 conn.EscribirLogAsync(log_ubi, mensajeLog).Wait(); // Wait para asegurar que se complete antes de seguir
                             
                             }
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                LstResumenLogMigra.Items.Add($"{DateTime.Now}: {item.TABLE_NAME}  , insercion realizada =  {result}  Total rows = {dtorigen.Rows}");
+                            });
 
                         }
                         catch (Exception ex)
@@ -2015,20 +2029,28 @@ namespace ToolMigration
 
                     await proceso_crea_scripts(sqlcon_data, tablas, PathLogScript + "\\Script" + Guid.NewGuid().ToString().ToUpper().Substring(1, 10).ToString() + ".sql", true, true, false, PathLogScript, true);
 
-
                     // Inicia el hilo
                 }
                 else
                 {
 
-
                     await proceso_crea_scripts(sqlcon_data, tablas, PathLogScript + "\\Script" + Guid.NewGuid().ToString().ToUpper().Substring(1, 10).ToString() + ".sql", true, false, false, PathLogScript, true);
 
                 }
 
-
             }
             await Bloqueo_Interfaz(false);
+
+            var fin = DateTime.Now.ToString();
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                LstResumenLogMigra.Items.Add(log_ubi);
+                LstResumenLogMigra.Items.Add(fin);
+                LstResumenLogMigra.Items.Add("finaliza migracion");
+                System.Windows.MessageBox.Show("fin de la migracion.");
+            });
+
+
 
         }
 

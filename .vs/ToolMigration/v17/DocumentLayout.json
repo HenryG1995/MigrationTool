@@ -3,40 +3,56 @@
   "WorkspaceRootPath": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\logic\\transformation\\genscriptdestino.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:logic\\transformation\\genscriptdestino.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\selecciontablas.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:selecciontablas.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\selecciontablas.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:selecciontablas.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
-      "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\logic\\transformation\\scripting.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:logic\\transformation\\scripting.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\logic\\connections\\oracleconn.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:logic\\connections\\oracleconn.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\logic\\transformation\\genscriptdestino.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:logic\\transformation\\genscriptdestino.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\logic\\transformation\\metadatacore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:logic\\transformation\\metadatacore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\logic\\transformation\\translatedata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:logic\\transformation\\translatedata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\logic\\transformation\\metadatacore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:logic\\transformation\\metadatacore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\logic\\transformation\\scripting.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:logic\\transformation\\scripting.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\logic\\datamove\\equivalency.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:logic\\datamove\\equivalency.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\logic\\datamove\\typeo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:logic\\datamove\\typeo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\logic\\datamove\\typed.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:logic\\datamove\\typed.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\logic\\datamove\\selectord.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:logic\\datamove\\selectord.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\selecciontablas.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|solutionrelative:selecciontablas.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{D8462B10-F8AC-465A-BAAD-7FFE13AA2FF7}|ToolMigration.csproj|c:\\users\\henry\\desktop\\pg\\migrationtool\\logic\\tools\\cargarlistas.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -65,60 +81,49 @@
       "DocumentGroups": [
         {
           "DockedWidth": 238,
-          "SelectedChildIndex": 7,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "App.xaml",
-              "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\App.xaml",
-              "RelativeDocumentMoniker": "App.xaml",
-              "ToolTip": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\App.xaml",
-              "RelativeToolTip": "App.xaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-10-09T05:22:16.567Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "SeleccionTablas.xaml",
-              "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\SeleccionTablas.xaml",
-              "RelativeDocumentMoniker": "SeleccionTablas.xaml",
-              "ToolTip": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\SeleccionTablas.xaml",
-              "RelativeToolTip": "SeleccionTablas.xaml",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-10-09T05:21:16.146Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "SeleccionTablas.xaml.cs",
               "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\SeleccionTablas.xaml.cs",
               "RelativeDocumentMoniker": "SeleccionTablas.xaml.cs",
               "ToolTip": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\SeleccionTablas.xaml.cs",
               "RelativeToolTip": "SeleccionTablas.xaml.cs",
-              "ViewState": "AgIAAOACAAAAAAAAAAAuwPMCAABDAAAAAAAAAA==",
+              "ViewState": "AgIAAOYGAAAAAAAAAAAkwAIIAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-10-05T02:45:49.156Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 9,
+              "Title": "SelectorD.cs",
+              "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\DataMove\\SelectorD.cs",
+              "RelativeDocumentMoniker": "Logic\\DataMove\\SelectorD.cs",
+              "ToolTip": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\DataMove\\SelectorD.cs",
+              "RelativeToolTip": "Logic\\DataMove\\SelectorD.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-10T03:59:08.905Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "OracleConn.cs",
               "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\Connections\\OracleConn.cs",
               "RelativeDocumentMoniker": "Logic\\Connections\\OracleConn.cs",
               "ToolTip": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\Connections\\OracleConn.cs",
               "RelativeToolTip": "Logic\\Connections\\OracleConn.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8DAAAFAAAAAAAAAA==",
+              "ViewState": "AgIAABADAAAAAAAAAIAywBwDAAAMAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-05T03:20:31.713Z"
+              "WhenOpened": "2024-10-05T03:20:31.713Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 4,
               "Title": "TranslateData.cs",
               "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\Transformation\\TranslateData.cs",
               "RelativeDocumentMoniker": "Logic\\Transformation\\TranslateData.cs",
@@ -130,7 +135,41 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 2,
+              "Title": "GenScriptDestino.cs",
+              "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\Transformation\\GenScriptDestino.cs",
+              "RelativeDocumentMoniker": "Logic\\Transformation\\GenScriptDestino.cs",
+              "ToolTip": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\Transformation\\GenScriptDestino.cs",
+              "RelativeToolTip": "Logic\\Transformation\\GenScriptDestino.cs",
+              "ViewState": "AgIAACoAAAAAAAAAAAAowDoAAAAtAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-07T19:52:02.349Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "SeleccionTablas.xaml",
+              "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\SeleccionTablas.xaml",
+              "RelativeDocumentMoniker": "SeleccionTablas.xaml",
+              "ToolTip": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\SeleccionTablas.xaml",
+              "RelativeToolTip": "SeleccionTablas.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2024-10-09T05:21:16.146Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "App.xaml",
+              "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\App.xaml",
+              "RelativeDocumentMoniker": "App.xaml",
+              "ToolTip": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\App.xaml",
+              "RelativeToolTip": "App.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2024-10-09T05:22:16.567Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
               "Title": "Scripting.cs",
               "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\Transformation\\Scripting.cs",
               "RelativeDocumentMoniker": "Logic\\Transformation\\Scripting.cs",
@@ -143,6 +182,30 @@
             {
               "$type": "Document",
               "DocumentIndex": 8,
+              "Title": "TypeD.cs",
+              "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\DataMove\\TypeD.cs",
+              "RelativeDocumentMoniker": "Logic\\DataMove\\TypeD.cs",
+              "ToolTip": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\DataMove\\TypeD.cs",
+              "RelativeToolTip": "Logic\\DataMove\\TypeD.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-10T03:59:09.805Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "TypeO.cs",
+              "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\DataMove\\TypeO.cs",
+              "RelativeDocumentMoniker": "Logic\\DataMove\\TypeO.cs",
+              "ToolTip": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\DataMove\\TypeO.cs",
+              "RelativeToolTip": "Logic\\DataMove\\TypeO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-10T03:59:12.028Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "MetaDataCore.cs",
               "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\Transformation\\MetaDataCore.cs",
               "RelativeDocumentMoniker": "Logic\\Transformation\\MetaDataCore.cs",
@@ -154,32 +217,31 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "GenScriptDestino.cs",
-              "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\Transformation\\GenScriptDestino.cs",
-              "RelativeDocumentMoniker": "Logic\\Transformation\\GenScriptDestino.cs",
-              "ToolTip": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\Transformation\\GenScriptDestino.cs",
-              "RelativeToolTip": "Logic\\Transformation\\GenScriptDestino.cs",
-              "ViewState": "AgIAADMAAAAAAAAAAAAEwEQAAACEAAAAAAAAAA==",
+              "DocumentIndex": 6,
+              "Title": "Equivalency.cs",
+              "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\DataMove\\Equivalency.cs",
+              "RelativeDocumentMoniker": "Logic\\DataMove\\Equivalency.cs",
+              "ToolTip": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\DataMove\\Equivalency.cs",
+              "RelativeToolTip": "Logic\\DataMove\\Equivalency.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-07T19:52:02.349Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-10T03:59:14.116Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 10,
               "Title": "MainWindow.xaml.cs",
               "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\MainWindow.xaml.cs",
               "RelativeDocumentMoniker": "MainWindow.xaml.cs",
               "ToolTip": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\MainWindow.xaml.cs",
               "RelativeToolTip": "MainWindow.xaml.cs",
-              "ViewState": "AgIAADoAAAAAAAAAAADwv1MAAAAkAAAAAAAAAA==",
+              "ViewState": "AgIAACEAAAAAAAAAAAAAwKkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-10-05T04:20:14.983Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 16,
               "Title": "ToolMigration.csproj",
               "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\ToolMigration.csproj",
               "RelativeDocumentMoniker": "ToolMigration.csproj",
@@ -191,19 +253,18 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 11,
               "Title": "MainWindow.xaml",
               "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\MainWindow.xaml",
               "RelativeDocumentMoniker": "MainWindow.xaml",
               "ToolTip": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\MainWindow.xaml",
               "RelativeToolTip": "MainWindow.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-10-05T05:14:57.114Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-10-05T05:14:57.114Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 14,
               "Title": "ConnString.cs",
               "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\DataModels\\ConnString.cs",
               "RelativeDocumentMoniker": "Logic\\DataModels\\ConnString.cs",
@@ -215,7 +276,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 15,
               "Title": "Microsoft.NET.Sdk.targets",
               "DocumentMoniker": "C:\\Program Files\\dotnet\\sdk\\8.0.400\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.NET.Sdk.targets",
               "RelativeDocumentMoniker": "..\\..\\..\\..\\..\\Program Files\\dotnet\\sdk\\8.0.400\\Sdks\\Microsoft.NET.Sdk\\targets\\Microsoft.NET.Sdk.targets",
@@ -227,7 +288,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 13,
               "Title": "CargarListas.cs",
               "DocumentMoniker": "C:\\Users\\Henry\\Desktop\\PG\\MigrationTool\\Logic\\Tools\\CargarListas.cs",
               "RelativeDocumentMoniker": "Logic\\Tools\\CargarListas.cs",

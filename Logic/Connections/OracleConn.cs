@@ -27,13 +27,7 @@ namespace ToolMigration.Logic.Connections
         {
             string connectionString;
 
-            // var STR = Environment.GetEnvironmentVariable("STR");
-
-            // connectionString = string.Format("USER ID={0};PASSWORD={1};DATA SOURCE= (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = {2})(PORT = {3}))(CONNECT_DATA = (SERVICE_NAME ={4}))) ;", UserID, Pass, Host, Port, ServiceName);
             connectionString = string.Format("USER ID={0};PASSWORD={1};DATA SOURCE= (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = {2})(PORT = {3}))(CONNECT_DATA = (SID = {4}))) ;Min Pool Size=5;Max Pool Size=100;Incr Pool Size=15;Connection Timeout=0;", UserID, Pass, Host, Port, SID);
-
-            // connectionString = "Data Source=tu_servidor:1521/tu_sid;User Id=tu_usuario;Password=tu_contrasena;";
-
 
             conections.ORAString = connectionString;
 
@@ -44,10 +38,9 @@ namespace ToolMigration.Logic.Connections
                 try
                 {
                     connection.Open();
-                //    Debug.WriteLine("Conexión establecida correctamente");
-
-                    // Aquí puedes ejecutar tus consultas SQL
+            
                     OracleCommand command = new OracleCommand("SELECT SYS_GUID() UUID FROM DUAL", connection);
+            
                     OracleDataReader reader = command.ExecuteReader();
 
                     while (reader.Read())
@@ -76,7 +69,9 @@ namespace ToolMigration.Logic.Connections
                 try
                 {
                     connection.Open();
+
                     OracleConnection.ClearAllPools();
+
                     connection.Close();
                 }
                 catch (OracleException ex)
@@ -88,6 +83,7 @@ namespace ToolMigration.Logic.Connections
                     if (connection.State == ConnectionState.Open)
                     {
                         connection.Close();
+
                         Console.WriteLine("Conexión cerrada.");
                     }
                 }
@@ -98,10 +94,15 @@ namespace ToolMigration.Logic.Connections
         {
 
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+
             builder.DataSource = host + "," + port;
+            
             builder.InitialCatalog = database;
+            
             builder.UserID = usuario;
+            
             builder.Password = pass;
+            
             builder.TrustServerCertificate = true;
 
             string connectionString = builder.ConnectionString;
@@ -115,10 +116,12 @@ namespace ToolMigration.Logic.Connections
             {
                 try
                 {
-                    connection.Open(); // Open the connection before executing commands
+                    connection.Open(); 
+
                     Debug.WriteLine("Conexion SQL establecida correctamente");
 
-                    SqlCommand command = new SqlCommand("SELECT NEWID() AS UUID", connection); // Specify the connection explicitly
+                    SqlCommand command = new SqlCommand("SELECT NEWID() AS UUID", connection); 
+                    
                     SqlDataReader reader = command.ExecuteReader();
 
                     while (reader.Read())
@@ -127,13 +130,17 @@ namespace ToolMigration.Logic.Connections
                     }
 
                     reader.Close();
+
                     connection.Close();
+                    
                     return true;
                 }
                 catch (Exception ex)
                 {
                     connection.Close();
+                    
                     Debug.WriteLine("Error: " + ex.Message);
+                    
                     return false;
                 }
             }
@@ -787,6 +794,7 @@ namespace ToolMigration.Logic.Connections
 
         public bool Destino(DataTable dataOrigen, string tabla, string connectionOra, List<DataTypeConvert> _listaDeConversiones)
         {
+            
             try
             {
                 // Procesamos el DataTable para convertir tipos de datos según la lista de conversiones
